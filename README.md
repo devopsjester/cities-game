@@ -59,7 +59,7 @@ Player 1: Rochester  (starts with 'R', ends Ann Arbor)
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/YOUR_USERNAME/cities-game.git
+   git clone https://github.com/devopsjester/cities-game.git
    cd cities-game
    ```
 

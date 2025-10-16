@@ -13,7 +13,7 @@ NC='\033[0m' # No Color
 
 # Configuration
 REGISTRY="ghcr.io"
-REPO_OWNER="${GITHUB_REPOSITORY_OWNER:-YOUR_USERNAME}"
+REPO_OWNER="${GITHUB_REPOSITORY_OWNER:-devopsjester}"
 REPO_NAME="cities-game"
 TAG="${1:-latest}"
 

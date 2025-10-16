@@ -64,4 +64,4 @@ This project follows semantic versioning:
 ### Links
 - [Keep a Changelog](https://keepachangelog.com/)
 - [Semantic Versioning](https://semver.org/)
-- [GitHub Releases](https://github.com/YOUR_USERNAME/cities-game/releases)
+- [GitHub Releases](https://github.com/devopsjester/cities-game/releases)

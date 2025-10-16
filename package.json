@@ -55,7 +55,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/YOUR_USERNAME/cities-game.git"
+    "url": "https://github.com/devopsjester/cities-game.git"
   },
   "keywords": [
     "game",
@@ -70,7 +70,7 @@
   "author": "Cities Game Contributors",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/YOUR_USERNAME/cities-game/issues"
+    "url": "https://github.com/devopsjester/cities-game/issues"
   },
-  "homepage": "https://github.com/YOUR_USERNAME/cities-game#readme"
+  "homepage": "https://github.com/devopsjester/cities-game#readme"
 }
