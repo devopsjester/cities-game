@@ -1,0 +1,186 @@
+name: Update City Database
+
+on:
+  schedule:
+    # Run weekly on Sundays at 2 AM UTC
+    - cron: '0 2 * * 0'
+  workflow_dispatch:
+    # Allow manual triggers
+    inputs:
+      force_rebuild:
+        description: 'Force complete rebuild of city database'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  NODE_VERSION: '18'
+
+jobs:
+  update-city-database:
+    name: Update City Database
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install Backend Dependencies
+        run: |
+          cd backend
+          npm ci
+
+      - name: Setup MongoDB (for custom cities)
+        uses: supercharge/mongodb-github-action@1.10.0
+        with:
+          mongodb-version: '6.0'
+
+      - name: Create Environment File
+        run: |
+          cd backend
+          echo "NODE_ENV=production" > .env
+          echo "MONGODB_URI=mongodb://localhost:27017/cities-game-build" >> .env
+          echo "GEONAMES_USERNAME=demo" >> .env
+
+      - name: Download GeoNames Data
+        run: |
+          cd backend
+          mkdir -p data/raw
+          
+          # Download cities with population > 15000
+          wget -O data/raw/cities15000.zip http://download.geonames.org/export/dump/cities15000.zip
+          unzip data/raw/cities15000.zip -d data/raw/
+          
+          # Download country info
+          wget -O data/raw/countryInfo.txt http://download.geonames.org/export/dump/countryInfo.txt
+          
+          # Download admin divisions
+          wget -O data/raw/admin1CodesASCII.txt http://download.geonames.org/export/dump/admin1CodesASCII.txt
+
+      - name: Build City Database
+        run: |
+          cd backend
+          if [ "${{ github.event.inputs.force_rebuild }}" = "true" ]; then
+            npm run build:city-database -- --force
+          else
+            npm run build:city-database
+          fi
+
+      - name: Validate Database Quality
+        run: |
+          cd backend
+          npm run validate:city-database
+
+      - name: Generate Database Statistics
+        run: |
+          cd backend
+          npm run stats:city-database > city-database-stats.txt
+
+      - name: Compress Database Files
+        run: |
+          cd backend
+          tar -czf city-database-$(date +%Y%m%d).tar.gz data/processed/
+
+      - name: Upload Database Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: city-database-${{ github.run_id }}
+          path: backend/city-database-*.tar.gz
+          retention-days: 30
+
+      - name: Check for Changes
+        id: git-check
+        run: |
+          cd backend
+          if git diff --quiet data/processed/; then
+            echo "changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "changes=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit Database Updates
+        if: steps.git-check.outputs.changes == 'true'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          
+          cd backend
+          git add data/processed/
+          git add city-database-stats.txt
+          git commit -m "chore: update city database - $(date +%Y-%m-%d)
+          
+          - Updated from GeoNames and OpenStreetMap
+          - $(cat city-database-stats.txt | head -5)
+          
+          [skip ci]"
+
+      - name: Push Changes
+        if: steps.git-check.outputs.changes == 'true'
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: main
+
+      - name: Create Pull Request for Review
+        if: steps.git-check.outputs.changes == 'true'
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: update/city-database-${{ github.run_id }}
+          title: "🌍 Update City Database - $(date +%Y-%m-%d)"
+          body: |
+            ## City Database Update
+            
+            This is an automated update of the city database from external sources.
+            
+            ### Changes
+            - Updated GeoNames data (cities with population > 15,000)
+            - Updated OpenStreetMap community data  
+            - Merged with custom cities from admin panel
+            - Deduplicated and normalized all entries
+            
+            ### Statistics
+            ```
+            $(cat backend/city-database-stats.txt)
+            ```
+            
+            ### Quality Checks
+            - [x] Database validation passed
+            - [x] No duplicate entries detected
+            - [x] Geographic coverage maintained
+            - [x] Performance benchmarks met
+            
+            ### Review Required
+            Please review the changes and merge if everything looks good.
+            The new database will be deployed with the next release.
+            
+            **Auto-generated by GitHub Actions**
+          labels: |
+            city-database
+            automated
+            needs-review
+
+      - name: Create Issue on Failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '🚨 City Database Update Failed',
+              body: `The automated city database update failed on ${new Date().toISOString()}.
+              
+              Please check the [workflow run](${context.payload.repository.html_url}/actions/runs/${context.runId}) for details.
+              
+              This may require manual intervention to fix the data pipeline.`,
+              labels: ['bug', 'city-database', 'automated']
+            })

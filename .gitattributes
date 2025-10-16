@@ -1,0 +1,24 @@
+# Git LFS tracking for large city database files
+*.city-db filter=lfs diff=lfs merge=lfs -text
+city-database/ filter=lfs diff=lfs merge=lfs -text
+*.tar.gz filter=lfs diff=lfs merge=lfs -text
+
+# Ensure line endings are normalized
+* text=auto
+
+# Binary files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+
+# Archives
+*.zip binary
+*.tar binary
+*.gz binary
+
+# Database files  
+*.db binary
+*.sqlite binary

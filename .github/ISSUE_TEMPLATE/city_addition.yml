@@ -1,0 +1,110 @@
+name: City Database Addition
+description: Add a missing city to the game database
+title: "[City]: Add [City Name] to database"
+labels: ["city-database", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Help us expand our city database! 🌍
+        
+        If you found a city that should be in the game but isn't recognized, please fill out this form.
+        
+  - type: input
+    id: city-name
+    attributes:
+      label: City Name
+      description: The full name of the city as you entered it in the game
+      placeholder: e.g., São Paulo, New York City, Aberdeen
+    validations:
+      required: true
+      
+  - type: input
+    id: country
+    attributes:
+      label: Country
+      description: The country where this city is located
+      placeholder: e.g., Brazil, United States, Scotland
+    validations:
+      required: true
+      
+  - type: input
+    id: region-state
+    attributes:
+      label: Region/State/Province
+      description: The state, province, or region (if applicable)
+      placeholder: e.g., São Paulo, New York, Aberdeenshire
+      
+  - type: textarea
+    id: alternative-names
+    attributes:
+      label: Alternative Names or Spellings
+      description: Are there other common names or spellings for this city?
+      placeholder: |
+        List any alternative names, one per line:
+        - Alternative Name 1
+        - Alternative Name 2
+        
+  - type: input
+    id: population
+    attributes:
+      label: Approximate Population
+      description: If known, what's the approximate population?
+      placeholder: e.g., 50000, 1200000
+      
+  - type: dropdown
+    id: city-type
+    attributes:
+      label: Community Type
+      description: What type of community is this?
+      options:
+        - City
+        - Town
+        - Village
+        - Municipality
+        - Borough
+        - Other (specify in additional context)
+    validations:
+      required: true
+      
+  - type: textarea
+    id: verification-source
+    attributes:
+      label: Verification Source
+      description: How can we verify this city exists? (Wikipedia link, official website, etc.)
+      placeholder: |
+        Please provide links or sources where we can verify this city:
+        - Wikipedia: https://...
+        - Official website: https://...
+        - Maps: https://...
+        
+  - type: dropdown
+    id: game-context
+    attributes:
+      label: Game Context
+      description: When did you try to use this city?
+      options:
+        - During normal gameplay
+        - Testing the game
+        - Browsing city database
+        - Other
+        
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Any other information about this city
+      placeholder: Historical significance, notable features, why this city should be included...
+      
+  - type: checkboxes
+    id: verification
+    attributes:
+      label: Verification
+      description: Please confirm the following
+      options:
+        - label: This is a real place that exists (not fictional)
+          required: true
+        - label: I have provided accurate information to the best of my knowledge
+          required: true
+        - label: I understand this city will be reviewed before being added
+          required: true

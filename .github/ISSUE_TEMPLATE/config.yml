@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Discussions
+    url: https://github.com/YOUR_USERNAME/cities-game/discussions
+    about: Ask questions and discuss ideas with the community
+  - name: 🔒 Security Issues
+    url: https://github.com/YOUR_USERNAME/cities-game/security
+    about: Report security vulnerabilities privately
+  - name: 📖 Documentation
+    url: https://github.com/YOUR_USERNAME/cities-game/blob/main/README.md
+    about: Check the documentation for setup and usage instructions
