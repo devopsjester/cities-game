@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   # MongoDB Database
@@ -59,7 +59,7 @@ services:
       timeout: 10s
       retries: 3
 
-  # Frontend Web App  
+  # Frontend Web App
   frontend:
     build:
       context: ./frontend
