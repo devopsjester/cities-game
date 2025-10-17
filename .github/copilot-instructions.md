@@ -4,6 +4,8 @@
 
 Cities Game is a real-time multiplayer word game where players take turns naming cities, towns, and communities from around the world. Each player must name a location that begins with the same letter the previous player's location ended with.
 
+**Note**: This project is currently in development. The backend and frontend directories are being set up according to the architecture described below.
+
 ## Architecture
 
 ### Technology Stack
@@ -276,7 +278,7 @@ test(api): add integration tests for game endpoints
 
 - This is a monorepo with workspaces for backend and frontend
 - Development requires Node.js 18+ and MongoDB
-- The city database must be built before first run: `npm run city-database:build` (from root) or `npm run build:city-database` (from backend directory)
+- The city database build command (when backend is implemented): `npm run city-database:build` from root directory
 - Real-time communication uses Socket.io for instant game updates
 - The admin panel is available at `/admin` for adding custom cities
 - Docker Compose is available for local deployment
