@@ -1,7 +1,7 @@
 import { nanoid } from 'nanoid';
 import GameModel, { IGame } from '../models/Game';
-import { Game, Player, GameMove, ValidationResult } from '../types';
-import { generateGameCode, normalizeCityName, extractNextLetter, startsWithLetter } from '../utils/gameUtils';
+import { GameMove, ValidationResult } from '../types';
+import { generateGameCode, startsWithLetter } from '../utils/gameUtils';
 import { cityValidationService } from './cityValidationService';
 import logger from '../utils/logger';
 
@@ -132,7 +132,7 @@ export class GameService {
     const validationResult = cityValidationService.validateCity(
       cityName,
       usedCitiesSet,
-      game.gameHistory
+      game.gameHistory as GameMove[]
     );
 
     // Check if city starts with correct letter (if not first move)
@@ -161,7 +161,7 @@ export class GameService {
         validationSource: validationResult.source,
       };
 
-      game.gameHistory.push(move);
+      game.gameHistory.push(move as any);
       game.usedCities.push(validationResult.normalizedName);
 
       // Move to next player
@@ -266,7 +266,7 @@ export class GameService {
    */
   getRecentMoves(game: IGame, limit: number = 10): GameMove[] {
     const history = game.gameHistory || [];
-    return history.slice(-limit);
+    return history.slice(-limit) as GameMove[];
   }
 
   /**
@@ -283,7 +283,7 @@ export class GameService {
     const totalPages = Math.ceil(total / perPage);
     const start = (page - 1) * perPage;
     const end = start + perPage;
-    const moves = history.slice(start, end);
+    const moves = history.slice(start, end) as GameMove[];
 
     return {
       moves,

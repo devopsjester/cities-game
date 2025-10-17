@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Game, Player, GameMove } from '../types';
+import { Game, GameMove } from '../types';
 
 interface GameState {
   game: Game | null;

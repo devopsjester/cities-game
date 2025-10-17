@@ -25,7 +25,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Request logging
-app.use((req: Request, res: Response, next: NextFunction) => {
+app.use((req: Request, _res: Response, next: NextFunction) => {
   logger.info(`${req.method} ${req.path}`);
   next();
 });
@@ -35,7 +35,7 @@ app.use('/api/cities', citiesRouter);
 app.use('/api', gamesRouter);
 
 // Error handling
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
   logger.error('Error:', err);
   res.status(500).json({
     error: process.env.NODE_ENV === 'production' 
@@ -56,7 +56,7 @@ async function startServer() {
     await cityValidationService.initialize();
     
     // Initialize Socket.IO
-    const io = initializeSocketServer(httpServer);
+    initializeSocketServer(httpServer);
     logger.info('Socket.IO initialized');
     
     // Start listening

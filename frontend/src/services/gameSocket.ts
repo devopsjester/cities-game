@@ -1,12 +1,12 @@
 import { io, Socket } from 'socket.io-client';
-import { Game, GameMove, ValidationResult } from '../types';
+import { Game, GameMove, Player, ValidationResult } from '../types';
 
 class GameSocketService {
   private socket: Socket | null = null;
   private readonly serverUrl: string;
 
   constructor() {
-    this.serverUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+    this.serverUrl = import.meta.env?.VITE_API_URL || 'http://localhost:3001';
   }
 
   connect(): void {

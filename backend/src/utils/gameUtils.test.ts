@@ -1,4 +1,4 @@
-import { normalizeCityName, extractNextLetter, generateGameCode, startsWithLetter } from '../gameUtils';
+import { normalizeCityName, extractNextLetter, generateGameCode, startsWithLetter } from './gameUtils';
 
 describe('gameUtils', () => {
   describe('normalizeCityName', () => {

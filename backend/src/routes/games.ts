@@ -4,7 +4,7 @@ import { gameService } from '../services/gameService';
 const router = express.Router();
 
 // Health check
-router.get('/health', (req: Request, res: Response) => {
+router.get('/health', (_req: Request, res: Response) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
@@ -14,7 +14,8 @@ router.get('/games/:code', async (req: Request, res: Response, next: NextFunctio
     const game = await gameService.getGame(req.params.code);
     
     if (!game) {
-      return res.status(404).json({ error: 'Game not found' });
+      res.status(404).json({ error: 'Game not found' });
+      return;
     }
     
     const recentMoves = gameService.getRecentMoves(game, 10);
@@ -38,7 +39,8 @@ router.get('/games/:code/moves', async (req: Request, res: Response, next: NextF
     const game = await gameService.getGame(req.params.code);
     
     if (!game) {
-      return res.status(404).json({ error: 'Game not found' });
+      res.status(404).json({ error: 'Game not found' });
+      return;
     }
     
     const page = req.query.page ? parseInt(req.query.page as string) : 1;

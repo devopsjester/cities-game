@@ -6,6 +6,14 @@ export interface Player {
   joinedAt: Date;
 }
 
+export interface Player {
+  id: string;
+  nickname: string;
+  socketId: string;
+  isCreator: boolean;
+  joinedAt: Date;
+}
+
 export interface GameMove {
   playerId: string;
   playerNickname: string;

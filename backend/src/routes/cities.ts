@@ -1,12 +1,11 @@
 import express, { Request, Response, NextFunction } from 'express';
 import { cityValidationService } from '../services/cityValidationService';
 import CustomCityModel from '../models/CustomCity';
-import logger from '../utils/logger';
 
 const router = express.Router();
 
 // Get city database stats
-router.get('/stats', async (req: Request, res: Response, next: NextFunction) => {
+router.get('/stats', async (_req: Request, res: Response, next: NextFunction) => {
   try {
     const stats = cityValidationService.getStats();
     res.json(stats);
@@ -21,7 +20,8 @@ router.post('/validate', async (req: Request, res: Response, next: NextFunction)
     const { cityName } = req.body;
     
     if (!cityName) {
-      return res.status(400).json({ error: 'City name is required' });
+      res.status(400).json({ error: 'City name is required' });
+      return;
     }
     
     const result = cityValidationService.validateCity(cityName);
@@ -37,7 +37,8 @@ router.get('/suggestions', async (req: Request, res: Response, next: NextFunctio
     const { q, limit } = req.query;
     
     if (!q) {
-      return res.status(400).json({ error: 'Query parameter q is required' });
+      res.status(400).json({ error: 'Query parameter q is required' });
+      return;
     }
     
     const suggestions = cityValidationService.getSuggestions(
@@ -57,7 +58,8 @@ router.post('/admin/cities', async (req: Request, res: Response, next: NextFunct
     const { name, country, region } = req.body;
     
     if (!name) {
-      return res.status(400).json({ error: 'City name is required' });
+      res.status(400).json({ error: 'City name is required' });
+      return;
     }
     
     await cityValidationService.addCustomCity(name, country, region, 'admin');
@@ -69,7 +71,7 @@ router.post('/admin/cities', async (req: Request, res: Response, next: NextFunct
 });
 
 // Admin: Get all custom cities
-router.get('/admin/cities', async (req: Request, res: Response, next: NextFunction) => {
+router.get('/admin/cities', async (_req: Request, res: Response, next: NextFunction) => {
   try {
     const cities = await CustomCityModel.find().sort({ createdAt: -1 });
     res.json(cities);
@@ -84,7 +86,8 @@ router.patch('/admin/cities/:id/approve', async (req: Request, res: Response, ne
     const city = await CustomCityModel.findById(req.params.id);
     
     if (!city) {
-      return res.status(404).json({ error: 'City not found' });
+      res.status(404).json({ error: 'City not found' });
+      return;
     }
     
     city.isApproved = true;
@@ -105,7 +108,8 @@ router.delete('/admin/cities/:id', async (req: Request, res: Response, next: Nex
     const city = await CustomCityModel.findByIdAndDelete(req.params.id);
     
     if (!city) {
-      return res.status(404).json({ error: 'City not found' });
+      res.status(404).json({ error: 'City not found' });
+      return;
     }
     
     // Refresh city validation service
