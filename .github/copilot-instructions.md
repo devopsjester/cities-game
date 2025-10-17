@@ -278,7 +278,7 @@ test(api): add integration tests for game endpoints
 
 - This is a monorepo with workspaces for backend and frontend
 - Development requires Node.js 18+ and MongoDB
-- The city database build command (when backend is implemented): `npm run city-database:build` from root directory
+- The city database can be built using `npm run city-database:build` from the root directory
 - Real-time communication uses Socket.io for instant game updates
 - The admin panel is available at `/admin` for adding custom cities
 - Docker Compose is available for local deployment
