@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
+import { GameBoard } from './components/GameBoard';
 import { Home } from './components/Home';
 import { Lobby } from './components/Lobby';
-import { GameBoard } from './components/GameBoard';
-import { useGameStore } from './store/gameStore';
 import { gameSocketService } from './services/gameSocket';
+import { useGameStore } from './store/gameStore';
 import './styles/App.css';
 
 function App() {

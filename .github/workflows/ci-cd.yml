@@ -47,6 +47,9 @@ jobs:
       - name: Check TypeScript (Backend)
         run: |
           cd backend
+          echo "Current directory: $(pwd)"
+          echo "Node modules exist: $(ls -la node_modules | head -5)"
+          echo "Package.json exists: $(ls -la package.json)"
           npm run type-check
 
       - name: Check TypeScript (Frontend)
