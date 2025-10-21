@@ -73,10 +73,13 @@ jobs:
         working-directory: ./frontend
         run: npm run type-check
 
-      - name: Run Prettier Check
-        run: |
-          cd backend && npm run format:check
-          cd frontend && npm run format:check
+      - name: Run Prettier Check (Backend)
+        working-directory: ./backend
+        run: npm run format:check
+
+      - name: Run Prettier Check (Frontend)
+        working-directory: ./frontend
+        run: npm run format:check
 
   # Security Scanning
   security:
