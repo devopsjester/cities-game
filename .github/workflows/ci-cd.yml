@@ -29,14 +29,18 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Install dependencies (Backend)
-        working-directory: ./backend
         run: |
-          npm install
+          echo "Installing backend dependencies..."
+          npm ci
+          echo "Backend dependencies installed, checking node_modules:"
+          ls -la node_modules/.bin/ | grep jest || echo "Jest still not found"
+        working-directory: backend
 
       - name: Install dependencies (Frontend)
-        working-directory: ./frontend
         run: |
-          npm install
+          echo "Installing frontend dependencies..."
+          npm ci
+        working-directory: frontend
 
       - name: Debug Backend Dependencies
         working-directory: ./backend
@@ -174,9 +178,8 @@ jobs:
 
       - name: Run Backend Tests
         run: |
-          echo "Checking Jest availability:"
-          ls -la node_modules/.bin/ | grep jest || echo "Jest not found in .bin"
-          echo "PATH: $PATH"
+          echo "Checking if dependencies are properly installed:"
+          ls -la node_modules/.bin/ | head -10
           echo "Running tests:"
           npm run test -- --watchAll=false --ci
         working-directory: backend
