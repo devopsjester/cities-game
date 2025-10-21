@@ -37,7 +37,7 @@ function App() {
     gameSocketService.onPlayerLeft((data) => {
       updateGameState({
         players: data.players,
-        status: data.status as any,
+        status: data.status as 'waiting' | 'active' | 'completed',
       });
       setError(`${data.playerNickname} has left the game`);
       setTimeout(() => setError(null), 3000);

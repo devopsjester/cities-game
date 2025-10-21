@@ -166,7 +166,7 @@ export class GameService {
         validationSource: validationResult.source,
       };
 
-      game.gameHistory.push(move as any);
+      game.gameHistory.push(move);
       game.usedCities.push(validationResult.normalizedName);
 
       // Move to next player

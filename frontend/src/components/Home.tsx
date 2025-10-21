@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { gameSocketService } from '../services/gameSocket';
 import { useGameStore } from '../store/gameStore';
+import type { Game } from '../types';
 
-export const Home: React.FC = () => {
+export function Home() {
   const [nickname, setNickname] = useState('');
   const [gameCode, setGameCode] = useState('');
   const [mode, setMode] = useState<'menu' | 'create' | 'join'>('menu');
@@ -18,7 +19,7 @@ export const Home: React.FC = () => {
     gameSocketService.createGame(nickname, (response) => {
       setIsLoading(false);
       if (response.success && response.game) {
-        setGame(response.game as any);
+        setGame(response.game as Game);
         setPlayerId(response.game.players?.[0]?.id || null);
         setPlayerNickname(nickname);
       } else {
@@ -41,7 +42,7 @@ export const Home: React.FC = () => {
     gameSocketService.joinGame(gameCode.toUpperCase(), nickname, (response) => {
       setIsLoading(false);
       if (response.success && response.game) {
-        setGame(response.game as any);
+        setGame(response.game as Game);
         const player = response.game.players?.find((p) => p.nickname === nickname);
         setPlayerId(player?.id || null);
         setPlayerNickname(nickname);
@@ -118,4 +119,4 @@ export const Home: React.FC = () => {
       </div>
     </div>
   );
-};
+}
