@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [main, develop]
 
+permissions:
+  actions: read
+  contents: read
+  security-events: write
+
 env:
   NODE_VERSION: "24"
 
@@ -85,6 +90,10 @@ jobs:
   security:
     name: Security Scan
     runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -93,27 +102,22 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
 
       - name: Install dependencies (Backend)
-        run: |
-          cd backend
-          npm ci
+        working-directory: ./backend
+        run: npm install
 
       - name: Install dependencies (Frontend)
-        run: |
-          cd frontend
-          npm ci
+        working-directory: ./frontend
+        run: npm install
 
       - name: Run npm audit (Backend)
-        run: |
-          cd backend
-          npm audit --audit-level high
+        working-directory: ./backend
+        run: npm audit --audit-level high
 
       - name: Run npm audit (Frontend)
-        run: |
-          cd frontend
-          npm audit --audit-level high
+        working-directory: ./frontend
+        run: npm audit --audit-level high
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
