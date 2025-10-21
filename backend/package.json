@@ -13,6 +13,7 @@
     "lint": "eslint src --ext .ts",
     "format": "prettier --write \"src/**/*.ts\"",
     "type-check": "tsc --noEmit",
+    "build-cities": "tsx scripts/build-cities.ts",
     "build:city-database": "tsx scripts/build-city-database.ts",
     "validate:city-database": "tsx scripts/validate-city-database.ts",
     "stats:city-database": "tsx scripts/stats-city-database.ts"

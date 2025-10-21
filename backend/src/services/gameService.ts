@@ -2,8 +2,8 @@ import { nanoid } from 'nanoid';
 import GameModel, { IGame } from '../models/Game';
 import { GameMove, ValidationResult } from '../types';
 import { generateGameCode, startsWithLetter } from '../utils/gameUtils';
-import { cityValidationService } from './cityValidationService';
 import logger from '../utils/logger';
+import { cityValidationService } from './cityValidationService';
 
 export class GameService {
   /**
@@ -38,11 +38,7 @@ export class GameService {
   /**
    * Join an existing game
    */
-  async joinGame(
-    gameCode: string,
-    playerNickname: string,
-    playerSocketId: string
-  ): Promise<IGame> {
+  async joinGame(gameCode: string, playerNickname: string, playerSocketId: string): Promise<IGame> {
     const game = await GameModel.findOne({
       code: gameCode.toUpperCase(),
     });
@@ -129,23 +125,32 @@ export class GameService {
 
     // Validate the city
     const usedCitiesSet = new Set(game.usedCities);
-    const validationResult = cityValidationService.validateCity(
+    const validationResult = await cityValidationService.validateCity(
       cityName,
       usedCitiesSet,
       game.gameHistory as GameMove[]
+    );
+
+    logger.info(
+      `City validation for '${cityName}': isValid=${validationResult.isValid}, normalizedName='${validationResult.normalizedName}', source=${validationResult.source}`
     );
 
     // Check if city starts with correct letter (if not first move)
     if (game.gameHistory.length > 0) {
       const lastMove = game.gameHistory[game.gameHistory.length - 1];
       const requiredLetter = lastMove.nextStartingLetter;
-      
+
+      logger.info(`Checking starting letter: '${cityName}' must start with '${requiredLetter}'`);
+
       if (!startsWithLetter(cityName, requiredLetter)) {
+        logger.info(`Starting letter check failed`);
         validationResult.isValid = false;
-        validationResult.suggestions = [
-          `Must start with letter '${requiredLetter}'`,
-        ];
+        validationResult.suggestions = [`Must start with letter '${requiredLetter}'`];
+      } else {
+        logger.info(`Starting letter check passed`);
       }
+    } else {
+      logger.info(`First move in game - no starting letter requirement`);
     }
 
     // Only process valid, non-duplicate moves
@@ -272,7 +277,11 @@ export class GameService {
   /**
    * Get all moves with pagination
    */
-  getAllMoves(game: IGame, page: number = 1, perPage: number = 20): {
+  getAllMoves(
+    game: IGame,
+    page: number = 1,
+    perPage: number = 20
+  ): {
     moves: GameMove[];
     total: number;
     page: number;

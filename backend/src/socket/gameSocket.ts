@@ -1,7 +1,7 @@
-import { Server as SocketIOServer, Socket } from 'socket.io';
 import { Server as HTTPServer } from 'http';
-import { gameService } from '../services/gameService';
+import { Socket, Server as SocketIOServer } from 'socket.io';
 import { cityValidationService } from '../services/cityValidationService';
+import { gameService } from '../services/gameService';
 import logger from '../utils/logger';
 
 export function initializeSocketServer(httpServer: HTTPServer): SocketIOServer {
@@ -20,7 +20,7 @@ export function initializeSocketServer(httpServer: HTTPServer): SocketIOServer {
       try {
         const game = await gameService.createGame(data.nickname, socket.id);
         socket.join(game.code);
-        
+
         callback({
           success: true,
           game: {
@@ -29,7 +29,7 @@ export function initializeSocketServer(httpServer: HTTPServer): SocketIOServer {
             status: game.status,
           },
         });
-        
+
         // Notify room
         io.to(game.code).emit('game-updated', {
           code: game.code,
@@ -51,7 +51,7 @@ export function initializeSocketServer(httpServer: HTTPServer): SocketIOServer {
       try {
         const game = await gameService.joinGame(data.code, data.nickname, socket.id);
         socket.join(game.code);
-        
+
         callback({
           success: true,
           game: {
@@ -60,7 +60,7 @@ export function initializeSocketServer(httpServer: HTTPServer): SocketIOServer {
             status: game.status,
           },
         });
-        
+
         // Notify room
         io.to(game.code).emit('game-updated', {
           code: game.code,
@@ -81,15 +81,16 @@ export function initializeSocketServer(httpServer: HTTPServer): SocketIOServer {
     socket.on('start-game', async (data: { code: string; playerId: string }, callback) => {
       try {
         const game = await gameService.startGame(data.code, data.playerId);
-        
+
         callback({
           success: true,
         });
-        
+
         // Notify room
         io.to(game.code).emit('game-started', {
           code: game.code,
           players: game.players,
+          status: game.status,
           currentPlayerIndex: game.currentPlayerIndex,
         });
       } catch (error) {
@@ -102,49 +103,59 @@ export function initializeSocketServer(httpServer: HTTPServer): SocketIOServer {
     });
 
     // Submit move
-    socket.on('submit-move', async (data: { code: string; playerId: string; cityName: string }, callback) => {
-      try {
-        const result = await gameService.submitMove(data.code, data.playerId, data.cityName);
-        
-        if (result.validationResult.isValid && !result.validationResult.isDuplicate) {
-          // Move was valid
-          const recentMoves = gameService.getRecentMoves(result.game, 10);
-          
-          callback({
-            success: true,
-            validationResult: result.validationResult,
-          });
-          
-          // Notify room of new move
-          io.to(result.game.code).emit('move-made', {
-            move: result.game.gameHistory[result.game.gameHistory.length - 1],
-            currentPlayerIndex: result.game.currentPlayerIndex,
-            recentMoves,
-          });
-        } else {
-          // Move was invalid or duplicate
+    socket.on(
+      'submit-move',
+      async (data: { code: string; playerId: string; cityName: string }, callback) => {
+        try {
+          logger.info(
+            `Move submission attempt: ${data.cityName} by player ${data.playerId} in game ${data.code}`
+          );
+          const result = await gameService.submitMove(data.code, data.playerId, data.cityName);
+
+          logger.info(
+            `Validation result: isValid=${result.validationResult.isValid}, isDuplicate=${result.validationResult.isDuplicate}, suggestions=${result.validationResult.suggestions?.join(', ') || 'none'}`
+          );
+
+          if (result.validationResult.isValid && !result.validationResult.isDuplicate) {
+            // Move was valid
+            const recentMoves = gameService.getRecentMoves(result.game, 10);
+
+            callback({
+              success: true,
+              validationResult: result.validationResult,
+            });
+
+            // Notify room of new move
+            io.to(result.game.code).emit('move-made', {
+              move: result.game.gameHistory[result.game.gameHistory.length - 1],
+              currentPlayerIndex: result.game.currentPlayerIndex,
+              recentMoves,
+            });
+          } else {
+            // Move was invalid or duplicate
+            callback({
+              success: false,
+              validationResult: result.validationResult,
+              error: result.validationResult.isDuplicate
+                ? 'City already used in this game'
+                : 'Invalid city name',
+            });
+          }
+        } catch (error) {
+          logger.error('Error submitting move:', error);
           callback({
             success: false,
-            validationResult: result.validationResult,
-            error: result.validationResult.isDuplicate 
-              ? 'City already used in this game'
-              : 'Invalid city name',
+            error: error instanceof Error ? error.message : 'Failed to submit move',
           });
         }
-      } catch (error) {
-        logger.error('Error submitting move:', error);
-        callback({
-          success: false,
-          error: error instanceof Error ? error.message : 'Failed to submit move',
-        });
       }
-    });
+    );
 
     // Get game state
     socket.on('get-game-state', async (data: { code: string }, callback) => {
       try {
         const game = await gameService.getGame(data.code);
-        
+
         if (!game) {
           callback({
             success: false,
@@ -152,9 +163,9 @@ export function initializeSocketServer(httpServer: HTTPServer): SocketIOServer {
           });
           return;
         }
-        
+
         const recentMoves = gameService.getRecentMoves(game, 10);
-        
+
         callback({
           success: true,
           game: {
@@ -179,7 +190,7 @@ export function initializeSocketServer(httpServer: HTTPServer): SocketIOServer {
     socket.on('get-all-moves', async (data: { code: string; page?: number }, callback) => {
       try {
         const game = await gameService.getGame(data.code);
-        
+
         if (!game) {
           callback({
             success: false,
@@ -187,9 +198,9 @@ export function initializeSocketServer(httpServer: HTTPServer): SocketIOServer {
           });
           return;
         }
-        
+
         const result = gameService.getAllMoves(game, data.page || 1, 20);
-        
+
         callback({
           success: true,
           ...result,
@@ -207,7 +218,7 @@ export function initializeSocketServer(httpServer: HTTPServer): SocketIOServer {
     socket.on('validate-city', async (data: { cityName: string }, callback) => {
       try {
         const validationResult = cityValidationService.validateCity(data.cityName);
-        
+
         callback({
           success: true,
           validationResult,
@@ -225,7 +236,7 @@ export function initializeSocketServer(httpServer: HTTPServer): SocketIOServer {
     socket.on('get-suggestions', async (data: { partialName: string }, callback) => {
       try {
         const suggestions = cityValidationService.getSuggestions(data.partialName, 10);
-        
+
         callback({
           success: true,
           suggestions,
@@ -242,7 +253,7 @@ export function initializeSocketServer(httpServer: HTTPServer): SocketIOServer {
     // Disconnect
     socket.on('disconnect', async () => {
       logger.info(`Client disconnected: ${socket.id}`);
-      
+
       try {
         // Find game by socket ID and remove player
         const game = await gameService.getGameBySocketId(socket.id);
@@ -250,7 +261,7 @@ export function initializeSocketServer(httpServer: HTTPServer): SocketIOServer {
           const player = game.players.find((p) => p.socketId === socket.id);
           if (player) {
             await gameService.removePlayer(game.code, player.id);
-            
+
             // Notify room
             const updatedGame = await gameService.getGame(game.code);
             if (updatedGame) {
