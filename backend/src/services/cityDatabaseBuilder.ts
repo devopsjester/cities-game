@@ -49,8 +49,10 @@ export class CityDatabaseBuilder {
     sources.push(this.loadExistingCities());
 
     // Fetch from external APIs with controlled timing
-    logger.info(`API Flags - GEONAMES: ${process.env.ENABLE_GEONAMES}, OSM: ${process.env.ENABLE_OSM}, REST_COUNTRIES: ${process.env.ENABLE_REST_COUNTRIES}`);
-    
+    logger.info(
+      `API Flags - GEONAMES: ${process.env.ENABLE_GEONAMES}, OSM: ${process.env.ENABLE_OSM}, REST_COUNTRIES: ${process.env.ENABLE_REST_COUNTRIES}`
+    );
+
     if (process.env.ENABLE_GEONAMES === 'true') {
       logger.info('Adding GeoNames source');
       sources.push(this.fetchWithDelay(() => externalAPIService.fetchFromGeoNames(50000), 0));
