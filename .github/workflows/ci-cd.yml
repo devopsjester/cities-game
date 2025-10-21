@@ -7,7 +7,7 @@ on:
     branches: [main, develop]
 
 env:
-  NODE_VERSION: "18"
+  NODE_VERSION: "24"
 
 jobs:
   # Linting and Code Quality
@@ -23,54 +23,59 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
 
       - name: Install dependencies (Backend)
+        working-directory: ./backend
         run: |
-          cd backend
           npm ci --prefer-offline --no-audit
 
       - name: Install dependencies (Frontend)
+        working-directory: ./frontend
         run: |
-          cd frontend
           npm ci --prefer-offline --no-audit
 
       - name: Debug Backend Dependencies
+        working-directory: ./backend
         run: |
-          cd backend
           echo "Checking node_modules..."
           ls -la node_modules | head -10
           echo "Checking types..."
           ls -la node_modules/@types/ | head -10
           echo "Current directory:"
           pwd
+          echo "Node version:"
+          node --version
+          echo "NPM version:"
+          npm --version
 
       - name: Run ESLint (Backend)
-        run: |
-          cd backend
-          npm run lint
+        working-directory: ./backend
+        run: npm run lint
 
       - name: Run ESLint (Frontend)
-        run: |
-          cd frontend
-          npm run lint
+        working-directory: ./frontend
+        run: npm run lint
 
       - name: Check TypeScript (Backend)
+        working-directory: ./backend
         run: |
-          cd backend
           echo "Current directory: $(pwd)"
           echo "Node modules exist: $(ls -la node_modules | head -5)"
           echo "Package.json exists: $(ls -la package.json)"
+          echo "TypeScript config: $(ls -la tsconfig.json)"
           npm run type-check
 
       - name: Check TypeScript (Frontend)
-        run: |
-          cd frontend
-          npm run type-check
+        working-directory: ./frontend
+        run: npm run type-check
 
       - name: Run Prettier Check
         run: |
           cd backend && npm run format:check
-          cd ../frontend && npm run format:check
+          cd frontend && npm run format:check
 
   # Security Scanning
   security:
