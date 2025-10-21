@@ -12,7 +12,7 @@ export const Lobby: React.FC = () => {
 
   const handleStartGame = () => {
     if (!playerId) return;
-    
+
     gameSocketService.startGame(game.code, playerId, (response) => {
       if (!response.success) {
         console.error('Failed to start game:', response.error);
@@ -43,18 +43,12 @@ export const Lobby: React.FC = () => {
         </div>
 
         {isCreator && (
-          <button
-            onClick={handleStartGame}
-            className="primary"
-            disabled={game.players.length < 2}
-          >
+          <button onClick={handleStartGame} className="primary" disabled={game.players.length < 2}>
             {game.players.length < 2 ? 'Waiting for players...' : 'Start Game'}
           </button>
         )}
 
-        {!isCreator && (
-          <p className="info">Waiting for the game creator to start the game...</p>
-        )}
+        {!isCreator && <p className="info">Waiting for the game creator to start the game...</p>}
       </div>
     </div>
   );

@@ -17,10 +17,12 @@ const httpServer = createServer(app);
 const PORT = process.env.PORT || 3001;
 
 // Middleware
-app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -38,9 +40,7 @@ app.use('/api', gamesRouter);
 app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
   logger.error('Error:', err);
   res.status(500).json({
-    error: process.env.NODE_ENV === 'production' 
-      ? 'Internal server error' 
-      : err.message,
+    error: process.env.NODE_ENV === 'production' ? 'Internal server error' : err.message,
   });
 });
 
@@ -48,17 +48,17 @@ app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
 async function startServer() {
   try {
     logger.info('Starting Cities Game server...');
-    
+
     // Connect to database
     await connectDatabase();
-    
+
     // Initialize city validation service
     await cityValidationService.initialize();
-    
+
     // Initialize Socket.IO
     initializeSocketServer(httpServer);
     logger.info('Socket.IO initialized');
-    
+
     // Start listening
     httpServer.listen(PORT, () => {
       logger.info(`Server running on port ${PORT}`);

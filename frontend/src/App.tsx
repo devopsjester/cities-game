@@ -55,11 +55,9 @@ function App() {
       {game?.status === 'active' && <GameBoard />}
       {game?.status === 'waiting' && <Lobby />}
       {!game && <Home />}
-      
+
       {useGameStore.getState().error && (
-        <div className="error-toast">
-          {useGameStore.getState().error}
-        </div>
+        <div className="error-toast">{useGameStore.getState().error}</div>
       )}
     </div>
   );

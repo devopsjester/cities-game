@@ -14,13 +14,13 @@ export function normalizeCityName(input: string): string {
  */
 export function extractNextLetter(cityName: string): string {
   const normalized = cityName.trim().toLowerCase();
-  
+
   // Handle "city" suffix rule
   const cityRegex = /^(.+)\s+city$/i;
   const match = normalized.match(cityRegex);
-  
+
   let baseName = match ? match[1] : normalized;
-  
+
   // Get the last character that is a letter
   for (let i = baseName.length - 1; i >= 0; i--) {
     const char = baseName[i];
@@ -28,7 +28,7 @@ export function extractNextLetter(cityName: string): string {
       return char.toUpperCase();
     }
   }
-  
+
   return '';
 }
 

@@ -12,14 +12,14 @@ router.get('/health', (_req: Request, res: Response) => {
 router.get('/games/:code', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const game = await gameService.getGame(req.params.code);
-    
+
     if (!game) {
       res.status(404).json({ error: 'Game not found' });
       return;
     }
-    
+
     const recentMoves = gameService.getRecentMoves(game, 10);
-    
+
     res.json({
       code: game.code,
       players: game.players,
@@ -37,15 +37,15 @@ router.get('/games/:code', async (req: Request, res: Response, next: NextFunctio
 router.get('/games/:code/moves', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const game = await gameService.getGame(req.params.code);
-    
+
     if (!game) {
       res.status(404).json({ error: 'Game not found' });
       return;
     }
-    
+
     const page = req.query.page ? parseInt(req.query.page as string) : 1;
     const result = gameService.getAllMoves(game, page, 20);
-    
+
     res.json(result);
   } catch (error) {
     next(error);

@@ -13,14 +13,15 @@ export const GameBoard: React.FC = () => {
 
   const currentPlayer = game.players[game.currentPlayerIndex];
   const isMyTurn = currentPlayer?.id === playerId;
-  const lastMove = game.recentMoves && game.recentMoves.length > 0 
-    ? game.recentMoves[game.recentMoves.length - 1] 
-    : null;
+  const lastMove =
+    game.recentMoves && game.recentMoves.length > 0
+      ? game.recentMoves[game.recentMoves.length - 1]
+      : null;
   const requiredLetter = lastMove?.nextStartingLetter || '';
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!cityInput.trim()) {
       setError('Please enter a city name');
       return;
@@ -36,7 +37,7 @@ export const GameBoard: React.FC = () => {
 
     gameSocketService.submitMove(game.code, playerId, cityInput, (response) => {
       setIsSubmitting(false);
-      
+
       if (response.success) {
         setCityInput('');
         setError(null);

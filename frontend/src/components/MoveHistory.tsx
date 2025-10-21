@@ -33,7 +33,7 @@ export const MoveHistory: React.FC = () => {
 
   const loadPage = (page: number) => {
     if (!game.code) return;
-    
+
     setIsLoading(true);
     gameSocketService.getAllMoves(game.code, page, (response) => {
       setIsLoading(false);
@@ -77,9 +77,7 @@ export const MoveHistory: React.FC = () => {
                 <div className="move-meta">
                   <span className="move-player">{move.playerNickname}</span>
                   <span className="move-time">{formatTime(move.timestamp)}</span>
-                  {move.validationSource === 'custom' && (
-                    <span className="move-badge">Custom</span>
-                  )}
+                  {move.validationSource === 'custom' && <span className="move-badge">Custom</span>}
                 </div>
               </div>
               <div className="move-next-letter">{move.nextStartingLetter}</div>
