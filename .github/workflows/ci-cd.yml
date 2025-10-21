@@ -22,32 +22,35 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
-          cache-dependency-path: package-lock.json
 
       - name: Install dependencies (Backend)
         working-directory: ./backend
         run: |
-          npm ci --prefer-offline --no-audit
+          npm install
 
       - name: Install dependencies (Frontend)
         working-directory: ./frontend
         run: |
-          npm ci --prefer-offline --no-audit
+          npm install
 
       - name: Debug Backend Dependencies
         working-directory: ./backend
         run: |
-          echo "Checking node_modules..."
-          ls -la node_modules | head -10
-          echo "Checking types..."
-          ls -la node_modules/@types/ | head -10
-          echo "Current directory:"
-          pwd
-          echo "Node version:"
-          node --version
-          echo "NPM version:"
-          npm --version
+          echo "=== Environment Info ==="
+          echo "Current directory: $(pwd)"
+          echo "Node version: $(node --version)"
+          echo "NPM version: $(npm --version)"
+          echo "=== File System ==="
+          echo "Package.json exists: $(ls -la package.json)"
+          echo "Node modules exists: $(test -d node_modules && echo 'YES' || echo 'NO')"
+          echo "=== Module Resolution Test ==="
+          echo "Testing mongoose resolution:"
+          node -e "try { require.resolve('mongoose'); console.log('mongoose: FOUND'); } catch(e) { console.log('mongoose: NOT FOUND -', e.message); }"
+          echo "Testing express resolution:"
+          node -e "try { require.resolve('express'); console.log('express: FOUND'); } catch(e) { console.log('express: NOT FOUND -', e.message); }"
+          echo "=== TypeScript Resolution Test ==="
+          echo "TypeScript version: $(npx tsc --version)"
+          echo "TSConfig exists: $(ls -la tsconfig.json)"
 
       - name: Run ESLint (Backend)
         working-directory: ./backend
