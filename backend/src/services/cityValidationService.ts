@@ -301,7 +301,7 @@ export class CityValidationService {
       const fuzzyResults = this.fuzzyMatcher.search(normalized);
 
       if (fuzzyResults.length > 0) {
-        const suggestions = fuzzyResults.slice(0, 3).map((result) => {
+        const suggestions = fuzzyResults.slice(0, 3).map((result: { item: string }) => {
           const city = this.cities.get(result.item);
           return city?.displayName || result.item;
         });
@@ -368,7 +368,7 @@ export class CityValidationService {
     const normalized = normalizeCityName(partialName);
     const results = this.fuzzyMatcher.search(normalized);
 
-    return results.slice(0, limit).map((result) => {
+    return results.slice(0, limit).map((result: { item: string }) => {
       const city = this.cities.get(result.item);
       return city?.displayName || result.item;
     });

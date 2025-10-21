@@ -8,13 +8,13 @@ export const connectDatabase = async (): Promise<void> => {
     await mongoose.connect(mongoUri);
 
     logger.info('MongoDB connected successfully');
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error('MongoDB connection error:', error);
     process.exit(1);
   }
 };
 
-mongoose.connection.on('error', (error) => {
+mongoose.connection.on('error', (error: Error) => {
   logger.error('MongoDB error:', error);
 });
 

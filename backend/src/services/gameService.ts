@@ -52,7 +52,7 @@ export class GameService {
     }
 
     // Check if player already in game
-    const existingPlayer = game.players.find((p) => p.nickname === playerNickname);
+    const existingPlayer = game.players.find((p: any) => p.nickname === playerNickname);
     if (existingPlayer) {
       throw new Error('Player with this nickname already in game');
     }
@@ -81,7 +81,7 @@ export class GameService {
       throw new Error('Game not found');
     }
 
-    const player = game.players.find((p) => p.id === playerId);
+    const player = game.players.find((p: any) => p.id === playerId);
     if (!player || !player.isCreator) {
       throw new Error('Only the game creator can start the game');
     }
@@ -124,7 +124,7 @@ export class GameService {
     }
 
     // Validate the city
-    const usedCitiesSet = new Set(game.usedCities);
+    const usedCitiesSet = new Set<string>(game.usedCities);
     const validationResult = await cityValidationService.validateCity(
       cityName,
       usedCitiesSet,
