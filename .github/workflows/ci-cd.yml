@@ -174,8 +174,12 @@ jobs:
 
       - name: Run Backend Tests
         run: |
-          cd backend
-          npm test -- --watchAll=false --ci
+          echo "Checking Jest availability:"
+          ls -la node_modules/.bin/ | grep jest || echo "Jest not found in .bin"
+          echo "PATH: $PATH"
+          echo "Running tests:"
+          npm run test -- --watchAll=false --ci
+        working-directory: backend
         env:
           NODE_ENV: test
 
