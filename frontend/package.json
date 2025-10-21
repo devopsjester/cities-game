@@ -9,8 +9,10 @@
     "preview": "vite preview",
     "test": "vitest",
     "test:ui": "vitest --ui",
+    "test:e2e": "playwright test",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "format": "prettier --write \"src/**/*.{ts,tsx}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx}\"",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
@@ -35,6 +37,7 @@
     "vitest": "^1.1.0",
     "@testing-library/react": "^14.1.2",
     "@testing-library/jest-dom": "^6.1.5",
-    "jsdom": "^23.0.1"
+    "jsdom": "^23.0.1",
+    "@playwright/test": "^1.40.0"
   }
 }

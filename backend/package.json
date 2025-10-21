@@ -12,6 +12,7 @@
     "test:integration": "jest --testPathPattern=integration",
     "lint": "eslint src --ext .ts",
     "format": "prettier --write \"src/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.ts\"",
     "type-check": "tsc --noEmit",
     "build-cities": "tsx scripts/build-cities.ts",
     "build:city-database": "tsx scripts/build-city-database.ts",
