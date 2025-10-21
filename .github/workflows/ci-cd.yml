@@ -175,14 +175,14 @@ jobs:
       - name: Run Backend Tests
         run: |
           cd backend
-          npm test -- --coverage --watchAll=false --ci
+          npm test -- --watchAll=false --ci
         env:
           NODE_ENV: test
 
       - name: Run Frontend Tests
         run: |
           cd frontend
-          npm test -- --coverage --run
+          npm test -- --run
 
       - name: Upload Backend Coverage
         uses: codecov/codecov-action@v3
@@ -223,13 +223,23 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd backend && npm ci
-          cd ../frontend && npm ci
+          npm ci
+        working-directory: backend
+
+      - name: Install dependencies (Frontend)
+        run: |
+          npm ci
+        working-directory: frontend
 
       - name: Build applications
         run: |
-          cd backend && npm run build
-          cd ../frontend && npm run build
+          npm run build
+        working-directory: backend
+
+      - name: Build Frontend Application
+        run: |
+          npm run build
+        working-directory: frontend
 
       - name: Setup test environment
         run: |

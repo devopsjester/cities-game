@@ -52,7 +52,7 @@ export class GameService {
     }
 
     // Check if player already in game
-    const existingPlayer = game.players.find((p: any) => p.nickname === playerNickname);
+    const existingPlayer = game.players.find((p) => p.nickname === playerNickname);
     if (existingPlayer) {
       throw new Error('Player with this nickname already in game');
     }
@@ -81,7 +81,7 @@ export class GameService {
       throw new Error('Game not found');
     }
 
-    const player = game.players.find((p: any) => p.id === playerId);
+    const player = game.players.find((p) => p.id === playerId);
     if (!player || !player.isCreator) {
       throw new Error('Only the game creator can start the game');
     }
