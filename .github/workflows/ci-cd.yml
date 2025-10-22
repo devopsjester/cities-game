@@ -27,20 +27,16 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
 
-      - name: Install dependencies (Backend)
+      - name: Install dependencies (Root + Workspaces)
         run: |
-          echo "Installing backend dependencies..."
-          cd backend
+          echo "Installing root and workspace dependencies..."
           npm ci
-          echo "Backend dependencies installed, checking node_modules:"
-          ls -la node_modules/.bin/ | head -5 || echo "No .bin directory"
-
-      - name: Install dependencies (Frontend)
-        run: |
-          echo "Installing frontend dependencies..."
-          cd frontend
-          npm ci
+          echo "Root dependencies installed."
+          echo "Checking workspace structure:"
+          ls -la backend/node_modules/.bin/ | head -5 || echo "No backend .bin directory"
+          ls -la frontend/node_modules/.bin/ | head -5 || echo "No frontend .bin directory"
 
       - name: Debug Backend Dependencies
         working-directory: ./backend
@@ -116,14 +112,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
 
-      - name: Install dependencies (Backend)
-        working-directory: ./backend
-        run: npm install
-
-      - name: Install dependencies (Frontend)
-        working-directory: ./frontend
-        run: npm install
+      - name: Install dependencies (Root + Workspaces)
+        run: npm ci
 
       - name: Run npm audit (Backend)
         working-directory: ./backend
@@ -168,15 +160,8 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
 
-      - name: Install dependencies (Backend)
-        run: |
-          cd backend
-          npm ci
-
-      - name: Install dependencies (Frontend)
-        run: |
-          cd frontend
-          npm ci
+      - name: Install dependencies (Root + Workspaces)
+        run: npm ci
 
       - name: Create test environment file
         run: |
@@ -238,15 +223,8 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
 
-      - name: Install dependencies
-        run: |
-          npm ci
-        working-directory: backend
-
-      - name: Install dependencies (Frontend)
-        run: |
-          npm ci
-        working-directory: frontend
+      - name: Install dependencies (Root + Workspaces)
+        run: npm ci
 
       - name: Build applications
         run: |
