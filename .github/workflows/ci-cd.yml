@@ -2,9 +2,9 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main, develop, copilot/build-app-to-specification]
   pull_request:
-    branches: [main, develop]
+    branches: [main, develop, copilot/build-app-to-specification]
 
 permissions:
   actions: read
