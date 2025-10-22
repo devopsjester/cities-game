@@ -11,7 +11,7 @@
     "test": "npx jest --coverage",
     "test:watch": "jest --watch",
     "test:integration": "jest --testPathPattern=integration",
-    "lint": "eslint src --ext .ts",
+    "lint": "eslint src/**/*.ts",
     "format": "prettier --write \"src/**/*.ts\"",
     "format:check": "prettier --check \"src/**/*.ts\"",
     "type-check": "tsc --noEmit",
