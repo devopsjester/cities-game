@@ -4,6 +4,17 @@ import { cityValidationService } from '../services/cityValidationService';
 import { gameService } from '../services/gameService';
 import logger from '../utils/logger';
 
+// Socket Response Types
+interface SuccessResponse<T = Record<string, unknown>> {
+  success: true;
+  data?: T;
+}
+
+interface ErrorResponse {
+  success: false;
+  error: string;
+}
+
 export function initializeSocketServer(httpServer: HTTPServer): SocketIOServer {
   const io = new SocketIOServer(httpServer, {
     cors: {
@@ -16,17 +27,19 @@ export function initializeSocketServer(httpServer: HTTPServer): SocketIOServer {
     logger.info(`Client connected: ${socket.id}`);
 
     // Create game
-    socket.on('create-game', async (data: { nickname: string }, callback: (response: any) => void) => {
+    socket.on('create-game', async (data: { nickname: string }, callback: (response: SuccessResponse | ErrorResponse) => void) => {
       try {
         const game = await gameService.createGame(data.nickname, socket.id);
         socket.join(game.code);
 
         callback({
           success: true,
-          game: {
-            code: game.code,
-            players: game.players,
-            status: game.status,
+          data: {
+            game: {
+              code: game.code,
+              players: game.players,
+              status: game.status,
+            },
           },
         });
 
@@ -47,17 +60,19 @@ export function initializeSocketServer(httpServer: HTTPServer): SocketIOServer {
     });
 
     // Join game
-    socket.on('join-game', async (data: { code: string; nickname: string }, callback: (response: any) => void) => {
+    socket.on('join-game', async (data: { code: string; nickname: string }, callback: (response: SuccessResponse | ErrorResponse) => void) => {
       try {
         const game = await gameService.joinGame(data.code, data.nickname, socket.id);
         socket.join(game.code);
 
         callback({
           success: true,
-          game: {
-            code: game.code,
-            players: game.players,
-            status: game.status,
+          data: {
+            game: {
+              code: game.code,
+              players: game.players,
+              status: game.status,
+            },
           },
         });
 
@@ -78,7 +93,7 @@ export function initializeSocketServer(httpServer: HTTPServer): SocketIOServer {
     });
 
     // Start game
-    socket.on('start-game', async (data: { code: string; playerId: string }, callback: (response: any) => void) => {
+    socket.on('start-game', async (data: { code: string; playerId: string }, callback: (response: SuccessResponse | ErrorResponse) => void) => {
       try {
         const game = await gameService.startGame(data.code, data.playerId);
 
@@ -105,7 +120,7 @@ export function initializeSocketServer(httpServer: HTTPServer): SocketIOServer {
     // Submit move
     socket.on(
       'submit-move',
-      async (data: { code: string; playerId: string; cityName: string }, callback: (response: any) => void) => {
+      async (data: { code: string; playerId: string; cityName: string }, callback: (response: SuccessResponse | ErrorResponse) => void) => {
         try {
           logger.info(
             `Move submission attempt: ${data.cityName} by player ${data.playerId} in game ${data.code}`
@@ -122,7 +137,9 @@ export function initializeSocketServer(httpServer: HTTPServer): SocketIOServer {
 
             callback({
               success: true,
-              validationResult: result.validationResult,
+              data: {
+                validationResult: result.validationResult,
+              },
             });
 
             // Notify room of new move
@@ -135,7 +152,6 @@ export function initializeSocketServer(httpServer: HTTPServer): SocketIOServer {
             // Move was invalid or duplicate
             callback({
               success: false,
-              validationResult: result.validationResult,
               error: result.validationResult.isDuplicate
                 ? 'City already used in this game'
                 : 'Invalid city name',
@@ -152,7 +168,7 @@ export function initializeSocketServer(httpServer: HTTPServer): SocketIOServer {
     );
 
     // Get game state
-    socket.on('get-game-state', async (data: { code: string }, callback: (response: any) => void) => {
+    socket.on('get-game-state', async (data: { code: string }, callback: (response: SuccessResponse | ErrorResponse) => void) => {
       try {
         const game = await gameService.getGame(data.code);
 
@@ -168,13 +184,15 @@ export function initializeSocketServer(httpServer: HTTPServer): SocketIOServer {
 
         callback({
           success: true,
-          game: {
-            code: game.code,
-            players: game.players,
-            status: game.status,
-            currentPlayerIndex: game.currentPlayerIndex,
-            recentMoves,
-            totalMoves: game.gameHistory.length,
+          data: {
+            game: {
+              code: game.code,
+              players: game.players,
+              status: game.status,
+              currentPlayerIndex: game.currentPlayerIndex,
+              recentMoves,
+              totalMoves: game.gameHistory.length,
+            },
           },
         });
       } catch (error) {
@@ -187,7 +205,7 @@ export function initializeSocketServer(httpServer: HTTPServer): SocketIOServer {
     });
 
     // Get all moves (for expand history)
-    socket.on('get-all-moves', async (data: { code: string; page?: number }, callback: (response: any) => void) => {
+    socket.on('get-all-moves', async (data: { code: string; page?: number }, callback: (response: SuccessResponse | ErrorResponse) => void) => {
       try {
         const game = await gameService.getGame(data.code);
 
@@ -215,13 +233,15 @@ export function initializeSocketServer(httpServer: HTTPServer): SocketIOServer {
     });
 
     // Validate city (for autocomplete/suggestions)
-    socket.on('validate-city', async (data: { cityName: string }, callback: (response: any) => void) => {
+    socket.on('validate-city', async (data: { cityName: string }, callback: (response: SuccessResponse | ErrorResponse) => void) => {
       try {
         const validationResult = cityValidationService.validateCity(data.cityName);
 
         callback({
           success: true,
-          validationResult,
+          data: {
+            validationResult,
+          },
         });
       } catch (error) {
         logger.error('Error validating city:', error);
@@ -233,13 +253,15 @@ export function initializeSocketServer(httpServer: HTTPServer): SocketIOServer {
     });
 
     // Get city suggestions (for autocomplete)
-    socket.on('get-suggestions', async (data: { partialName: string }, callback: (response: any) => void) => {
+    socket.on('get-suggestions', async (data: { partialName: string }, callback: (response: SuccessResponse | ErrorResponse) => void) => {
       try {
         const suggestions = cityValidationService.getSuggestions(data.partialName, 10);
 
         callback({
           success: true,
-          suggestions,
+          data: {
+            suggestions,
+          },
         });
       } catch (error) {
         logger.error('Error getting suggestions:', error);
