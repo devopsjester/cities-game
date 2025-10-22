@@ -31,16 +31,16 @@ jobs:
       - name: Install dependencies (Backend)
         run: |
           echo "Installing backend dependencies..."
+          cd backend
           npm ci
           echo "Backend dependencies installed, checking node_modules:"
-          ls -la node_modules/.bin/ | grep jest || echo "Jest still not found"
-        working-directory: backend
+          ls -la node_modules/.bin/ | head -5 || echo "No .bin directory"
 
       - name: Install dependencies (Frontend)
         run: |
           echo "Installing frontend dependencies..."
+          cd frontend
           npm ci
-        working-directory: frontend
 
       - name: Debug Backend Dependencies
         working-directory: ./backend
@@ -69,18 +69,28 @@ jobs:
         working-directory: ./frontend
         run: npm run lint
 
-      - name: Check TypeScript (Backend)
-        working-directory: ./backend
+      - name: Debug environment (Backend)
         run: |
+          cd backend
           echo "Current directory: $(pwd)"
-          echo "Node modules exist: $(ls -la node_modules | head -5)"
-          echo "Package.json exists: $(ls -la package.json)"
-          echo "TypeScript config: $(ls -la tsconfig.json)"
-          npm run type-check
+          echo "Directory contents:"
+          ls -la
+          echo "Node modules present?"
+          ls -la node_modules/.bin/ | head -5 || echo "No node_modules/.bin found"
+          echo "Package.json exists?"
+          cat package.json | head -10
+          echo "Checking for TypeScript..."
+          which npx
+          npx --version
+          npx tsc --version || echo "TypeScript not found"
 
-      - name: Check TypeScript (Frontend)
-        working-directory: ./frontend
-        run: npm run type-check
+      - name: Lint and type check
+        run: |
+          cd backend
+          echo "Running lint and type check from $(pwd)"
+          echo "Checking npm scripts..."
+          npm run lint
+          npm run type-check
 
       - name: Run Prettier Check (Backend)
         working-directory: ./backend
@@ -178,11 +188,11 @@ jobs:
 
       - name: Run Backend Tests
         run: |
+          cd backend
           echo "Checking if dependencies are properly installed:"
           ls -la node_modules/.bin/ | head -10
           echo "Running tests:"
           npm run test -- --watchAll=false --ci
-        working-directory: backend
         env:
           NODE_ENV: test
 
