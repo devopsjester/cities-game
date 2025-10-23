@@ -37,11 +37,12 @@ async function runTests() {
     } catch (error) {
       if (testCase.shouldFail) {
         const errorMessage = error instanceof Error ? error.message : String(error);
-        if (errorMessage.includes(testCase.errorContains)) {
+        const expectedError = testCase.errorContains || '';
+        if (errorMessage.includes(expectedError)) {
           console.log(`✅ PASS: Correctly rejected nickname="${testCase.nickname}" with error: "${errorMessage}"`);
           passed++;
         } else {
-          console.log(`❌ FAIL: Wrong error message for nickname="${testCase.nickname}". Expected "${testCase.errorContains}", got "${errorMessage}"`);
+          console.log(`❌ FAIL: Wrong error message for nickname="${testCase.nickname}". Expected "${expectedError}", got "${errorMessage}"`);
           failed++;
         }
       } else {

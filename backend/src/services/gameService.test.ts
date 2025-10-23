@@ -1,9 +1,19 @@
+// Mock nanoid before importing anything that uses it
+let mockIdCounter = 0;
+jest.mock('nanoid', () => ({
+  nanoid: jest.fn(() => `mock-player-id-${++mockIdCounter}`),
+}));
+
 import { gameService } from './gameService';
 import GameModel from '../models/Game';
 import { connectDatabase } from '../config/database';
 import mongoose from 'mongoose';
 
 describe('GameService', () => {
+  beforeEach(() => {
+    // Reset the mock ID counter before each test
+    mockIdCounter = 0;
+  });
   beforeAll(async () => {
     // Connect to test database
     await connectDatabase();

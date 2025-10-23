@@ -12,6 +12,7 @@ export const Lobby: React.FC = () => {
       console.log('[Lobby] Rejoining game room', { code: game.code, playerId });
       gameSocketService.rejoinGame(game.code, playerId);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [game?.code, playerId]);
 
   if (!game) return null;

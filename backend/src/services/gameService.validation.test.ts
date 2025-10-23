@@ -1,7 +1,12 @@
-import { gameService } from './gameService';
+// Mock nanoid before importing anything that uses it
+jest.mock('nanoid', () => ({
+  nanoid: jest.fn(() => 'mock-player-id-123'),
+}));
 
 // Mock the GameModel
 jest.mock('../models/Game');
+
+import { gameService } from './gameService';
 
 describe('GameService - Input Validation', () => {
   describe('createGame', () => {
