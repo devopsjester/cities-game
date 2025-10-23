@@ -163,6 +163,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
 
       - name: Install dependencies (Root + Workspaces)
         run: |
@@ -182,19 +183,18 @@ jobs:
           echo "JWT_SECRET=test-secret-key" >> .env.test
 
       - name: Run Backend Tests
+        working-directory: ./backend
         run: |
-          cd backend
           echo "Checking if dependencies are properly installed:"
-          ls -la node_modules/.bin/ | head -10
+          ls -la node_modules/.bin/ | head -10 || echo "No node_modules/.bin directory"
           echo "Running tests:"
           npm run test -- --watchAll=false --ci
         env:
           NODE_ENV: test
 
       - name: Run Frontend Tests
-        run: |
-          cd frontend
-          npm test -- --run
+        working-directory: ./frontend
+        run: npm test -- --run
 
       - name: Upload Backend Coverage
         uses: codecov/codecov-action@v3
