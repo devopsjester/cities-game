@@ -119,9 +119,9 @@ describe('GameService', () => {
       const game = await gameService.createGame('Creator', 'socket1');
       const joinedGame = await gameService.joinGame(game.code, 'Player2', 'socket2');
 
-      await expect(
-        gameService.startGame(game.code, joinedGame.players[1].id)
-      ).rejects.toThrow('Only the game creator can start the game');
+      await expect(gameService.startGame(game.code, joinedGame.players[1].id)).rejects.toThrow(
+        'Only the game creator can start the game'
+      );
     });
 
     it('should throw error if game does not exist', async () => {

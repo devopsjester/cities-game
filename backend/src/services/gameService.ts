@@ -12,7 +12,7 @@ export class GameService {
   async createGame(creatorNickname: string, creatorSocketId: string): Promise<IGame> {
     logger.info('[GameService.createGame] Starting', {
       nickname: creatorNickname,
-      socketId: creatorSocketId
+      socketId: creatorSocketId,
     });
 
     // Validate inputs
@@ -64,7 +64,7 @@ export class GameService {
     await game.save();
     logger.info('[GameService.createGame] Game saved successfully', {
       code: game.code,
-      id: game._id
+      id: game._id,
     });
 
     logger.info(`Game created with code: ${code}`);

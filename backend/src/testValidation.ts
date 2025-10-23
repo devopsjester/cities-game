@@ -1,16 +1,31 @@
 // Simple test script to verify game creation validation
 const testCases = [
   { nickname: '', socketId: 'socket123', shouldFail: true, errorContains: 'Nickname is required' },
-  { nickname: '   ', socketId: 'socket123', shouldFail: true, errorContains: 'Nickname is required' },
-  { nickname: 'A', socketId: 'socket123', shouldFail: true, errorContains: 'at least 2 characters' },
-  { nickname: 'A'.repeat(21), socketId: 'socket123', shouldFail: true, errorContains: 'at most 20 characters' },
+  {
+    nickname: '   ',
+    socketId: 'socket123',
+    shouldFail: true,
+    errorContains: 'Nickname is required',
+  },
+  {
+    nickname: 'A',
+    socketId: 'socket123',
+    shouldFail: true,
+    errorContains: 'at least 2 characters',
+  },
+  {
+    nickname: 'A'.repeat(21),
+    socketId: 'socket123',
+    shouldFail: true,
+    errorContains: 'at most 20 characters',
+  },
   { nickname: 'ValidName', socketId: '', shouldFail: true, errorContains: 'Socket ID is required' },
   { nickname: 'ValidName', socketId: 'socket123', shouldFail: false },
 ];
 
 async function runTests() {
   // Import after connecting to database
-  await import('./config/database').then(db => db.connectDatabase());
+  await import('./config/database').then((db) => db.connectDatabase());
   const { gameService } = await import('./services/gameService');
   const GameModel = (await import('./models/Game')).default;
 
@@ -22,9 +37,11 @@ async function runTests() {
   for (const testCase of testCases) {
     try {
       const game = await gameService.createGame(testCase.nickname, testCase.socketId);
-      
+
       if (testCase.shouldFail) {
-        console.log(`❌ FAIL: Expected error for nickname="${testCase.nickname}", socketId="${testCase.socketId}"`);
+        console.log(
+          `❌ FAIL: Expected error for nickname="${testCase.nickname}", socketId="${testCase.socketId}"`
+        );
         failed++;
         // Clean up
         await GameModel.deleteOne({ _id: game._id });
@@ -39,14 +56,20 @@ async function runTests() {
         const errorMessage = error instanceof Error ? error.message : String(error);
         const expectedError = testCase.errorContains || '';
         if (errorMessage.includes(expectedError)) {
-          console.log(`✅ PASS: Correctly rejected nickname="${testCase.nickname}" with error: "${errorMessage}"`);
+          console.log(
+            `✅ PASS: Correctly rejected nickname="${testCase.nickname}" with error: "${errorMessage}"`
+          );
           passed++;
         } else {
-          console.log(`❌ FAIL: Wrong error message for nickname="${testCase.nickname}". Expected "${expectedError}", got "${errorMessage}"`);
+          console.log(
+            `❌ FAIL: Wrong error message for nickname="${testCase.nickname}". Expected "${expectedError}", got "${errorMessage}"`
+          );
           failed++;
         }
       } else {
-        console.log(`❌ FAIL: Unexpected error for valid input nickname="${testCase.nickname}": ${error instanceof Error ? error.message : String(error)}`);
+        console.log(
+          `❌ FAIL: Unexpected error for valid input nickname="${testCase.nickname}": ${error instanceof Error ? error.message : String(error)}`
+        );
         failed++;
       }
     }

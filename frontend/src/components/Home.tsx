@@ -11,7 +11,7 @@ export function Home() {
 
   const handleCreateGame = () => {
     console.log('[Home] handleCreateGame called', { nickname });
-    
+
     if (!nickname.trim()) {
       console.log('[Home] Validation failed: empty nickname');
       setError('Please enter a nickname');
@@ -23,11 +23,11 @@ export function Home() {
     gameSocketService.createGame(nickname, (response) => {
       console.log('[Home] Received response from createGame', response);
       setIsLoading(false);
-      
+
       if (response.success && response.game) {
         console.log('[Home] Success! Setting game state', {
           code: response.game.code,
-          players: response.game.players
+          players: response.game.players,
         });
         setGame(response.game as Game);
         setPlayerId(response.game.players?.[0]?.id || null);
@@ -35,7 +35,7 @@ export function Home() {
       } else {
         console.error('[Home] Failed to create game', {
           error: response.error,
-          response
+          response,
         });
         setError(response.error || 'Failed to create game');
       }
