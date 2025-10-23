@@ -52,7 +52,10 @@ export class GameService {
     }
 
     // Check if player already in game
-    const existingPlayer = game.players.find((p) => p.nickname === playerNickname);
+    const existingPlayer = game.players.find(
+      (p: { id: string; nickname: string; socketId: string; isCreator: boolean; joinedAt: Date }) =>
+        p.nickname === playerNickname
+    );
     if (existingPlayer) {
       throw new Error('Player with this nickname already in game');
     }
@@ -81,7 +84,10 @@ export class GameService {
       throw new Error('Game not found');
     }
 
-    const player = game.players.find((p) => p.id === playerId);
+    const player = game.players.find(
+      (p: { id: string; nickname: string; socketId: string; isCreator: boolean; joinedAt: Date }) =>
+        p.id === playerId
+    );
     if (!player || !player.isCreator) {
       throw new Error('Only the game creator can start the game');
     }
@@ -207,7 +213,10 @@ export class GameService {
       return null;
     }
 
-    const player = game.players.find((p) => p.id === playerId);
+    const player = game.players.find(
+      (p: { id: string; nickname: string; socketId: string; isCreator: boolean; joinedAt: Date }) =>
+        p.id === playerId
+    );
     if (player) {
       player.socketId = newSocketId;
       await game.save();
@@ -226,7 +235,10 @@ export class GameService {
       return null;
     }
 
-    const playerIndex = game.players.findIndex((p) => p.id === playerId);
+    const playerIndex = game.players.findIndex(
+      (p: { id: string; nickname: string; socketId: string; isCreator: boolean; joinedAt: Date }) =>
+        p.id === playerId
+    );
     if (playerIndex === -1) {
       return game;
     }

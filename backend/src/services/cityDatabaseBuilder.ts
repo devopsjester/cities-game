@@ -90,7 +90,7 @@ export class CityDatabaseBuilder {
       const cities = JSON.parse(data) as CityRecord[];
       logger.info(`Loaded ${cities.length} existing cities`);
       return cities;
-    } catch (error) {
+    } catch {
       logger.info('No existing cities file found, starting fresh');
       return [];
     }
