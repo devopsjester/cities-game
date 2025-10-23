@@ -233,10 +233,15 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
 
       - name: Install dependencies (Root + Workspaces)
-        run: npm ci
+        run: |
+          # Workaround for npm bug with optional dependencies (https://github.com/npm/cli/issues/4828)
+          echo "Cleaning up package-lock.json and node_modules to fix Rollup native dependencies..."
+          rm -rf package-lock.json node_modules
+          rm -rf backend/package-lock.json backend/node_modules
+          rm -rf frontend/package-lock.json frontend/node_modules
+          npm install
 
       - name: Build applications
         run: |
