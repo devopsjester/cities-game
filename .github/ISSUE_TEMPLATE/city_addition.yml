@@ -7,9 +7,9 @@ body:
     attributes:
       value: |
         Help us expand our city database! 🌍
-        
+
         If you found a city that should be in the game but isn't recognized, please fill out this form.
-        
+
   - type: input
     id: city-name
     attributes:
@@ -18,7 +18,7 @@ body:
       placeholder: e.g., São Paulo, New York City, Aberdeen
     validations:
       required: true
-      
+
   - type: input
     id: country
     attributes:
@@ -27,14 +27,14 @@ body:
       placeholder: e.g., Brazil, United States, Scotland
     validations:
       required: true
-      
+
   - type: input
     id: region-state
     attributes:
       label: Region/State/Province
       description: The state, province, or region (if applicable)
       placeholder: e.g., São Paulo, New York, Aberdeenshire
-      
+
   - type: textarea
     id: alternative-names
     attributes:
@@ -44,14 +44,14 @@ body:
         List any alternative names, one per line:
         - Alternative Name 1
         - Alternative Name 2
-        
+
   - type: input
     id: population
     attributes:
       label: Approximate Population
       description: If known, what's the approximate population?
       placeholder: e.g., 50000, 1200000
-      
+
   - type: dropdown
     id: city-type
     attributes:
@@ -66,7 +66,7 @@ body:
         - Other (specify in additional context)
     validations:
       required: true
-      
+
   - type: textarea
     id: verification-source
     attributes:
@@ -77,7 +77,7 @@ body:
         - Wikipedia: https://...
         - Official website: https://...
         - Maps: https://...
-        
+
   - type: dropdown
     id: game-context
     attributes:
@@ -88,14 +88,14 @@ body:
         - Testing the game
         - Browsing city database
         - Other
-        
+
   - type: textarea
     id: additional-context
     attributes:
       label: Additional Context
       description: Any other information about this city
       placeholder: Historical significance, notable features, why this city should be included...
-      
+
   - type: checkboxes
     id: verification
     attributes:

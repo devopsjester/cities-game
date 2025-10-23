@@ -190,3 +190,7 @@ playwright/.cache/
 # Local development
 .local/
 local-config.json
+
+# Generated city database files
+backend/data/cities.json
+backend/data/cities.backup.*.json

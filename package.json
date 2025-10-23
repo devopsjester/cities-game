@@ -47,7 +47,13 @@
     "stop": "npm run docker:down"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "eslint": "^9.38.0",
+    "@typescript-eslint/eslint-plugin": "^8.46.2",
+    "@typescript-eslint/parser": "^8.46.2"
+  },
+  "overrides": {
+    "eslint": "^9.38.0"
   },
   "engines": {
     "node": ">=18.0.0",

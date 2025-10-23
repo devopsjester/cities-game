@@ -1,7 +1,9 @@
 ## Description
+
 Brief description of the changes in this pull request.
 
 ## Type of Change
+
 Please delete options that are not relevant:
 
 - [ ] Bug fix (non-breaking change which fixes an issue)
@@ -13,21 +15,25 @@ Please delete options that are not relevant:
 - [ ] Test improvements
 
 ## Related Issues
+
 Closes #(issue number)
 Fixes #(issue number)
 Related to #(issue number)
 
 ## Changes Made
+
 Please provide a detailed list of changes:
 
 - Change 1
-- Change 2  
+- Change 2
 - Change 3
 
 ## Screenshots (if applicable)
+
 Add screenshots to help explain your changes.
 
 ## Testing
+
 Please describe the tests that you ran to verify your changes:
 
 - [ ] Unit tests pass (`npm test`)
@@ -37,11 +43,13 @@ Please describe the tests that you ran to verify your changes:
 - [ ] Browser compatibility tested
 
 ### Test Configuration
-- **Node.js version**: 
-- **Browser(s)**: 
-- **Operating System**: 
+
+- **Node.js version**:
+- **Browser(s)**:
+- **Operating System**:
 
 ## Performance Impact
+
 Does this change affect performance? If yes, please describe:
 
 - [ ] No performance impact
@@ -49,6 +57,7 @@ Does this change affect performance? If yes, please describe:
 - [ ] May impact performance (please explain)
 
 ## Security Considerations
+
 Does this change have security implications?
 
 - [ ] No security impact
@@ -56,14 +65,17 @@ Does this change have security implications?
 - [ ] Potential security concerns (please explain)
 
 ## Breaking Changes
+
 If this is a breaking change, please describe the impact and migration path:
 
 ## Documentation
+
 - [ ] Documentation has been updated
 - [ ] No documentation changes needed
 - [ ] Documentation update will follow in separate PR
 
 ## Checklist
+
 Please check all applicable items:
 
 - [ ] My code follows the style guidelines of this project
@@ -76,4 +88,5 @@ Please check all applicable items:
 - [ ] Any dependent changes have been merged and published in downstream modules
 
 ## Additional Notes
+
 Add any additional notes for reviewers here.

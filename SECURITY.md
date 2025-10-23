@@ -46,7 +46,7 @@ What could an attacker do with this vulnerability?
 3. Step three
 
 **Environment:**
-- Application version: 
+- Application version:
 - Environment: (production/staging/development)
 - Browser/OS: (if applicable)
 
@@ -75,24 +75,28 @@ We appreciate security researchers who help keep Cities Game safe:
 ### Current Security Implementations
 
 #### Input Validation
+
 - All user inputs are sanitized and validated
 - SQL injection prevention through parameterized queries
 - XSS prevention through output encoding
 - File upload restrictions and validation
 
 #### Authentication & Authorization
+
 - JWT tokens for session management
 - Rate limiting on authentication endpoints
 - Admin panel access control
 - Socket.io authentication for real-time features
 
 #### Infrastructure Security
+
 - HTTPS enforced in production
 - Secure headers (HSTS, CSP, etc.)
 - CORS properly configured
 - Environment variable protection
 
 #### Data Protection
+
 - No personal data collection
 - Temporary game data with auto-cleanup
 - Secure database connections
@@ -125,6 +129,7 @@ Permissions-Policy: geolocation=(), microphone=(), camera=()
 When looking for vulnerabilities, consider:
 
 #### Web Application Security
+
 - Cross-Site Scripting (XSS)
 - Cross-Site Request Forgery (CSRF)
 - SQL Injection
@@ -132,7 +137,8 @@ When looking for vulnerabilities, consider:
 - Session management issues
 - File upload vulnerabilities
 
-#### API Security  
+#### API Security
+
 - Authentication and authorization flaws
 - Rate limiting bypass
 - Input validation issues
@@ -140,6 +146,7 @@ When looking for vulnerabilities, consider:
 - Business logic flaws
 
 #### Infrastructure Security
+
 - Server misconfigurations
 - Dependency vulnerabilities
 - Container security issues
@@ -161,12 +168,14 @@ The following are **NOT** considered security vulnerabilities:
 ### Development Security
 
 #### Code Review
+
 - All code changes require security review
 - Focus on input validation and output encoding
 - Check for authentication and authorization logic
 - Review dependency updates for known vulnerabilities
 
-#### Testing  
+#### Testing
+
 ```bash
 # Run security linting
 npm run lint:security
@@ -179,12 +188,14 @@ npm run test:security
 ```
 
 #### Dependencies
+
 - Keep dependencies up to date
 - Use `npm audit` to check for vulnerabilities
 - Avoid dependencies with known security issues
 - Pin dependency versions in production
 
 #### Environment Variables
+
 ```bash
 # Good: Use environment variables for secrets
 const apiKey = process.env.API_KEY;
@@ -196,6 +207,7 @@ const apiKey = 'sk-1234567890abcdef';
 ### Deployment Security
 
 #### Production Checklist
+
 - [ ] All secrets are in environment variables
 - [ ] HTTPS is enforced
 - [ ] Security headers are configured
@@ -205,6 +217,7 @@ const apiKey = 'sk-1234567890abcdef';
 - [ ] Admin access is restricted
 
 #### Monitoring
+
 - Monitor for unusual activity patterns
 - Log security-relevant events
 - Set up alerts for potential attacks
@@ -237,22 +250,26 @@ const apiKey = 'sk-1234567890abcdef';
 ### Security Incident Severity Levels
 
 #### Critical
+
 - Remote code execution
 - Authentication bypass
 - Data breach or exposure
 - Complete system compromise
 
 #### High
+
 - Privilege escalation
 - Significant data access without authorization
 - Denial of service affecting availability
 
-#### Medium  
+#### Medium
+
 - Cross-site scripting (stored)
 - Information disclosure
 - Limited privilege escalation
 
 #### Low
+
 - Cross-site scripting (reflected)
 - Minor information disclosure
 - Security misconfigurations with limited impact
@@ -260,12 +277,15 @@ const apiKey = 'sk-1234567890abcdef';
 ## Contact Information
 
 ### Security Team
+
 - **Email**: security@yourdomain.com
 - **PGP Key**: [Link to PGP key for encrypted communications]
 - **Response Time**: 24 hours for initial response
 
 ### Emergency Contact
+
 For critical security issues requiring immediate attention:
+
 - **Phone**: +1-XXX-XXX-XXXX (24/7 security hotline)
 - **Slack**: @security-team in our internal Slack
 
