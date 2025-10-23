@@ -10,15 +10,45 @@ export class GameService {
    * Create a new game
    */
   async createGame(creatorNickname: string, creatorSocketId: string): Promise<IGame> {
-    const code = await this.generateUniqueGameCode();
-    const playerId = nanoid();
+    logger.info('[GameService.createGame] Starting', {
+      nickname: creatorNickname,
+      socketId: creatorSocketId
+    });
 
+    // Validate inputs
+    logger.info('[GameService.createGame] Validating inputs');
+    if (!creatorNickname || !creatorNickname.trim()) {
+      logger.error('[GameService.createGame] Validation failed: Nickname is required');
+      throw new Error('Nickname is required');
+    }
+    if (creatorNickname.trim().length < 2) {
+      logger.error('[GameService.createGame] Validation failed: Nickname too short');
+      throw new Error('Nickname must be at least 2 characters');
+    }
+    if (creatorNickname.trim().length > 20) {
+      logger.error('[GameService.createGame] Validation failed: Nickname too long');
+      throw new Error('Nickname must be at most 20 characters');
+    }
+    if (!creatorSocketId) {
+      logger.error('[GameService.createGame] Validation failed: Socket ID is required');
+      throw new Error('Socket ID is required');
+    }
+
+    logger.info('[GameService.createGame] Generating unique game code');
+    const code = await this.generateUniqueGameCode();
+    logger.info('[GameService.createGame] Generated code', { code });
+
+    logger.info('[GameService.createGame] Generating player ID');
+    const playerId = nanoid();
+    logger.info('[GameService.createGame] Generated player ID', { playerId });
+
+    logger.info('[GameService.createGame] Creating game document');
     const game = new GameModel({
       code,
       players: [
         {
           id: playerId,
-          nickname: creatorNickname,
+          nickname: creatorNickname.trim(),
           socketId: creatorSocketId,
           isCreator: true,
           joinedAt: new Date(),
@@ -30,7 +60,13 @@ export class GameService {
       status: 'waiting',
     });
 
+    logger.info('[GameService.createGame] Saving game to database');
     await game.save();
+    logger.info('[GameService.createGame] Game saved successfully', {
+      code: game.code,
+      id: game._id
+    });
+
     logger.info(`Game created with code: ${code}`);
     return game;
   }
@@ -39,6 +75,23 @@ export class GameService {
    * Join an existing game
    */
   async joinGame(gameCode: string, playerNickname: string, playerSocketId: string): Promise<IGame> {
+    // Validate inputs
+    if (!playerNickname || !playerNickname.trim()) {
+      throw new Error('Nickname is required');
+    }
+    if (playerNickname.trim().length < 2) {
+      throw new Error('Nickname must be at least 2 characters');
+    }
+    if (playerNickname.trim().length > 20) {
+      throw new Error('Nickname must be at most 20 characters');
+    }
+    if (!gameCode || !gameCode.trim()) {
+      throw new Error('Game code is required');
+    }
+    if (!playerSocketId) {
+      throw new Error('Socket ID is required');
+    }
+
     const game = await GameModel.findOne({
       code: gameCode.toUpperCase(),
     });
@@ -54,7 +107,7 @@ export class GameService {
     // Check if player already in game
     const existingPlayer = game.players.find(
       (p: { id: string; nickname: string; socketId: string; isCreator: boolean; joinedAt: Date }) =>
-        p.nickname === playerNickname
+        p.nickname.toLowerCase() === playerNickname.trim().toLowerCase()
     );
     if (existingPlayer) {
       throw new Error('Player with this nickname already in game');
@@ -63,7 +116,7 @@ export class GameService {
     const playerId = nanoid();
     game.players.push({
       id: playerId,
-      nickname: playerNickname,
+      nickname: playerNickname.trim(),
       socketId: playerSocketId,
       isCreator: false,
       joinedAt: new Date(),

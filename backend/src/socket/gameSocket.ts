@@ -1,13 +1,15 @@
 import { Server as HTTPServer } from 'http';
 import { Socket, Server as SocketIOServer } from 'socket.io';
+import GameModel from '../models/Game';
 import { cityValidationService } from '../services/cityValidationService';
 import { gameService } from '../services/gameService';
 import logger from '../utils/logger';
 
 // Socket Response Types
-interface SuccessResponse<T = Record<string, unknown>> {
+interface SuccessResponse<T = unknown> {
   success: true;
-  data?: T;
+  game?: T;
+  data?: unknown;
 }
 
 interface ErrorResponse {
@@ -33,34 +35,66 @@ export function initializeSocketServer(httpServer: HTTPServer): SocketIOServer {
         data: { nickname: string },
         callback: (response: SuccessResponse | ErrorResponse) => void
       ) => {
-        try {
-          const game = await gameService.createGame(data.nickname, socket.id);
-          socket.join(game.code);
+        logger.info(`[CREATE-GAME] Received request from socket ${socket.id}`, {
+          nickname: data?.nickname,
+          hasCallback: typeof callback === 'function',
+        });
 
-          callback({
-            success: true,
-            data: {
-              game: {
-                code: game.code,
-                players: game.players,
-                status: game.status,
-              },
-            },
+        try {
+          logger.info(`[CREATE-GAME] Calling gameService.createGame`, {
+            nickname: data.nickname,
+            socketId: socket.id,
           });
 
+          const game = await gameService.createGame(data.nickname, socket.id);
+
+          logger.info(`[CREATE-GAME] Game created successfully`, {
+            code: game.code,
+            playerCount: game.players.length,
+            status: game.status,
+          });
+
+          socket.join(game.code);
+          logger.info(`[CREATE-GAME] Socket joined room ${game.code}`);
+
+          const responseData = {
+            success: true as const,
+            game: {
+              code: game.code,
+              players: game.players,
+              status: game.status,
+            },
+          };
+
+          logger.info(`[CREATE-GAME] Sending success callback`, { responseData });
+          callback(responseData);
+
           // Notify room
+          logger.info(`[CREATE-GAME] Broadcasting game-updated to room ${game.code}`);
           io.to(game.code).emit('game-updated', {
             code: game.code,
             players: game.players,
             status: game.status,
             currentPlayerIndex: game.currentPlayerIndex,
           });
+
+          logger.info(`[CREATE-GAME] Complete`);
         } catch (error) {
-          logger.error('Error creating game:', error);
-          callback({
-            success: false,
-            error: error instanceof Error ? error.message : 'Failed to create game',
+          logger.error('[CREATE-GAME] Error creating game:', error);
+          logger.error('[CREATE-GAME] Error details:', {
+            message: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined,
+            nickname: data?.nickname,
+            socketId: socket.id,
           });
+
+          const errorResponse = {
+            success: false as const,
+            error: error instanceof Error ? error.message : 'Failed to create game',
+          };
+
+          logger.info(`[CREATE-GAME] Sending error callback`, { errorResponse });
+          callback(errorResponse);
         }
       }
     );
@@ -72,37 +106,140 @@ export function initializeSocketServer(httpServer: HTTPServer): SocketIOServer {
         data: { code: string; nickname: string },
         callback: (response: SuccessResponse | ErrorResponse) => void
       ) => {
-        try {
-          const game = await gameService.joinGame(data.code, data.nickname, socket.id);
-          socket.join(game.code);
+        logger.info(`[JOIN-GAME] Received request from socket ${socket.id}`, {
+          code: data?.code,
+          nickname: data?.nickname,
+          hasCallback: typeof callback === 'function',
+        });
 
-          callback({
-            success: true,
-            data: {
-              game: {
-                code: game.code,
-                players: game.players,
-                status: game.status,
-              },
-            },
+        try {
+          logger.info(`[JOIN-GAME] Calling gameService.joinGame`, {
+            code: data.code,
+            nickname: data.nickname,
+            socketId: socket.id,
           });
 
+          const game = await gameService.joinGame(data.code, data.nickname, socket.id);
+
+          logger.info(`[JOIN-GAME] Player joined successfully`, {
+            code: game.code,
+            playerCount: game.players.length,
+            players: game.players.map((p) => ({ nickname: p.nickname, id: p.id })),
+            status: game.status,
+          });
+
+          socket.join(game.code);
+          logger.info(`[JOIN-GAME] Socket joined room ${game.code}`);
+
+          const responseData = {
+            success: true as const,
+            game: {
+              code: game.code,
+              players: game.players,
+              status: game.status,
+            },
+          };
+
+          logger.info(`[JOIN-GAME] Sending success callback`, { responseData });
+          callback(responseData);
+
           // Notify room
-          io.to(game.code).emit('game-updated', {
+          const updateData = {
             code: game.code,
             players: game.players,
             status: game.status,
             currentPlayerIndex: game.currentPlayerIndex,
+          };
+
+          logger.info(`[JOIN-GAME] Broadcasting game-updated to room ${game.code}`, {
+            updateData,
+            roomSize: io.sockets.adapter.rooms.get(game.code)?.size || 0,
           });
+
+          io.to(game.code).emit('game-updated', updateData);
+
+          logger.info(`[JOIN-GAME] Complete`);
         } catch (error) {
-          logger.error('Error joining game:', error);
-          callback({
+          logger.error('[JOIN-GAME] Error joining game:', error);
+          logger.error('[JOIN-GAME] Error details:', {
+            message: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined,
+            code: data?.code,
+            nickname: data?.nickname,
+            socketId: socket.id,
+          });
+
+          const errorResponse = {
             success: false,
             error: error instanceof Error ? error.message : 'Failed to join game',
-          });
+          };
+
+          logger.info(`[JOIN-GAME] Sending error callback`, { errorResponse });
+          callback(errorResponse);
         }
       }
     );
+
+    // Rejoin game (for reconnections)
+    socket.on('rejoin-game', async (data: { code: string; playerId: string }) => {
+      logger.info(`[REJOIN-GAME] Received request from socket ${socket.id}`, {
+        code: data?.code,
+        playerId: data?.playerId,
+      });
+
+      try {
+        const game = await GameModel.findOne({ code: data.code.toUpperCase() });
+
+        if (!game) {
+          logger.warn(`[REJOIN-GAME] Game not found: ${data.code}`);
+          return;
+        }
+
+        // Find the player in the game
+        const player = game.players.find(
+          (p: {
+            id: string;
+            nickname: string;
+            socketId: string;
+            isCreator: boolean;
+            joinedAt: Date;
+          }) => p.id === data.playerId
+        );
+
+        if (!player) {
+          logger.warn(`[REJOIN-GAME] Player not found in game`, {
+            playerId: data.playerId,
+            code: data.code,
+          });
+          return;
+        }
+
+        // Update the player's socket ID
+        player.socketId = socket.id;
+        await game.save();
+
+        // Join the socket to the room
+        socket.join(game.code);
+
+        logger.info(`[REJOIN-GAME] Player rejoined successfully`, {
+          code: game.code,
+          playerId: data.playerId,
+          nickname: player.nickname,
+          newSocketId: socket.id,
+          roomSize: io.sockets.adapter.rooms.get(game.code)?.size || 0,
+        });
+
+        // Send the current game state to the rejoining player
+        socket.emit('game-updated', {
+          code: game.code,
+          players: game.players,
+          status: game.status,
+          currentPlayerIndex: game.currentPlayerIndex,
+        });
+      } catch (error) {
+        logger.error('[REJOIN-GAME] Error:', error);
+      }
+    });
 
     // Start game
     socket.on(

@@ -1,9 +1,18 @@
-import React from 'react';
-import { useGameStore } from '../store/gameStore';
+import React, { useEffect } from 'react';
 import { gameSocketService } from '../services/gameSocket';
+import { useGameStore } from '../store/gameStore';
 
 export const Lobby: React.FC = () => {
   const { game, playerId } = useGameStore();
+
+  useEffect(() => {
+    // Rejoin the game room when component mounts
+    // This ensures the socket is in the correct room even after reconnections
+    if (game && playerId) {
+      console.log('[Lobby] Rejoining game room', { code: game.code, playerId });
+      gameSocketService.rejoinGame(game.code, playerId);
+    }
+  }, [game?.code, playerId]);
 
   if (!game) return null;
 

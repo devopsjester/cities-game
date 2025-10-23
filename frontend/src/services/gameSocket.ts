@@ -42,7 +42,33 @@ class GameSocketService {
     nickname: string,
     callback: (response: { success: boolean; game?: Partial<Game>; error?: string }) => void
   ): void {
-    this.socket?.emit('create-game', { nickname }, callback);
+    console.log('[GameSocketService] createGame called', {
+      nickname,
+      socketConnected: !!this.socket?.connected,
+      socketId: this.socket?.id,
+    });
+
+    if (!this.socket) {
+      console.error('[GameSocketService] No socket connection!');
+      callback({ success: false, error: 'Not connected to server' });
+      return;
+    }
+
+    if (!this.socket.connected) {
+      console.error('[GameSocketService] Socket not connected!');
+      callback({ success: false, error: 'Connection lost' });
+      return;
+    }
+
+    console.log('[GameSocketService] Emitting create-game event');
+    this.socket.emit(
+      'create-game',
+      { nickname },
+      (response: { success: boolean; game?: Partial<Game>; error?: string }) => {
+        console.log('[GameSocketService] Received callback from server', response);
+        callback(response);
+      }
+    );
   }
 
   joinGame(
@@ -51,6 +77,15 @@ class GameSocketService {
     callback: (response: { success: boolean; game?: Partial<Game>; error?: string }) => void
   ): void {
     this.socket?.emit('join-game', { code, nickname }, callback);
+  }
+
+  rejoinGame(code: string, playerId: string): void {
+    console.log('[GameSocketService] Rejoining game room', {
+      code,
+      playerId,
+      socketId: this.socket?.id,
+    });
+    this.socket?.emit('rejoin-game', { code, playerId });
   }
 
   startGame(
