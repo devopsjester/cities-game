@@ -7,6 +7,7 @@ The Cities Game is a multiplayer web-based word game where players take turns na
 ## Game Rules
 
 ### Basic Gameplay
+
 1. Players take turns entering the name of a city, town, village, or any other type of community
 2. Each entry must start with the same letter that the previous player's entry ended with
 3. All entries are case-insensitive
@@ -15,47 +16,54 @@ The Cities Game is a multiplayer web-based word game where players take turns na
 ### Special Rules### Performance Considerations
 
 ### In-Memory Database Performance
+
 - **Validation Speed**: < 1ms for exact matches, < 5ms for fuzzy matching
 - **Memory Usage**: ~100-150MB per server instance
 - **Startup Time**: 30-60 seconds for initial database load
 - **Concurrent Access**: Thread-safe read operations, no locking needed
 
 ### Scalability Strategy
+
 - **Horizontal Scaling**: Each server instance loads identical city database
-- **Load Balancing**: Stateless validation allows any server to handle requests  
+- **Load Balancing**: Stateless validation allows any server to handle requests
 - **Database Sync**: Periodic updates ensure all instances have same data
 - **Graceful Updates**: Rolling deployments with zero-downtime database refresh
 
 ### Memory Management
+
 ```typescript
 // Startup sequence
 async function initializeServer() {
-  console.log('Loading city database...');
+  console.log("Loading city database...");
   const startTime = Date.now();
-  
+
   await cityValidator.initialize();
-  
+
   const loadTime = Date.now() - startTime;
   const memoryUsage = process.memoryUsage();
-  
+
   console.log(`City database loaded in ${loadTime}ms`);
-  console.log(`Memory usage: ${Math.round(memoryUsage.heapUsed / 1024 / 1024)}MB`);
-  
+  console.log(
+    `Memory usage: ${Math.round(memoryUsage.heapUsed / 1024 / 1024)}MB`,
+  );
+
   // Start accepting connections only after database is ready
   server.listen(PORT);
 }
 ```
 
 ### Fallback Strategy
+
 - **Primary**: In-memory validation (99.9% of cases)
 - **Fallback**: API validation for edge cases or new cities
 - **Cache**: Redis cache for API results
-- **Offline Mode**: Game continues with in-memory data onlyuffix Rule**: If a player enters a location ending with "city" (e.g., "Mexico City", "New York City"), the word "City" is ignored for determining the next starting letter
+- **Offline Mode**: Game continues with in-memory data onlyuffix Rule\*\*: If a player enters a location ending with "city" (e.g., "Mexico City", "New York City"), the word "City" is ignored for determining the next starting letter
   - Example: "Mexico City" → next player must start with "O" (from "Mexico"), not "Y"
 - **No Duplicate Cities**: Each city, town, or community can only be used once per game. If a player enters a city that has already been used, they must retry with a different location
 - **Invalid Entries**: If a player enters an invalid location, they get to retry (no penalty)
 
 ### Example Game Flow
+
 ```
 Player 1: Aberdeen
 Player 2: Newark  (starts with 'N', ends Aberdeen)
@@ -86,6 +94,7 @@ Player 1: Rochester (starts with 'R', ends Ann Arbor)
 ### Technology Stack
 
 #### Frontend
+
 - **Framework**: React.js with TypeScript
 - **State Management**: Redux Toolkit or Zustand
 - **WebSocket Client**: Socket.io-client for real-time updates
@@ -93,6 +102,7 @@ Player 1: Rochester (starts with 'R', ends Ann Arbor)
 - **Build Tool**: Vite
 
 #### Backend
+
 - **Runtime**: Node.js
 - **Framework**: Express.js with TypeScript
 - **WebSocket**: Socket.io for real-time communication
@@ -105,6 +115,7 @@ Player 1: Rochester (starts with 'R', ends Ann Arbor)
 - **Memory Storage**: Native JavaScript Map/Set with optimized serialization
 
 #### Infrastructure
+
 - **Hosting**: Vercel (frontend) + Railway/Render (backend)
 - **Database**: MongoDB Atlas
 - **CI/CD**: GitHub Actions
@@ -112,6 +123,7 @@ Player 1: Rochester (starts with 'R', ends Ann Arbor)
 ## Data Models
 
 ### Game Schema
+
 ```typescript
 interface Game {
   id: string;
@@ -120,13 +132,14 @@ interface Game {
   currentPlayerIndex: number;
   gameHistory: GameMove[];
   usedCities: Set<string>; // normalized city names to prevent duplicates
-  status: 'waiting' | 'active' | 'completed';
+  status: "waiting" | "active" | "completed";
   createdAt: Date;
   updatedAt: Date;
 }
 ```
 
 ### Player Schema
+
 ```typescript
 interface Player {
   id: string;
@@ -138,6 +151,7 @@ interface Player {
 ```
 
 ### Game Move Schema
+
 ```typescript
 interface GameMove {
   playerId: string;
@@ -152,6 +166,7 @@ interface GameMove {
 ```
 
 ### Custom City Schema
+
 ```typescript
 interface CustomCity {
   id: string;
@@ -173,6 +188,7 @@ interface CustomCity {
 The game uses a **hybrid in-memory database approach** for city validation, combining the best of multiple data sources with ultra-fast performance.
 
 #### Core Architecture
+
 ```typescript
 class CityDatabase {
   private cities: Map<string, CityRecord>;
@@ -180,45 +196,45 @@ class CityDatabase {
   private apiService: ExternalAPIService;
 
   async initialize() {
-    console.log('Building comprehensive city database...');
-    
+    console.log("Building comprehensive city database...");
+
     // Load prebuilt database from multiple sources
     const cities = await this.loadPrebuiltDatabase();
-    this.cities = new Map(cities.map(c => [c.normalizedName, c]));
+    this.cities = new Map(cities.map((c) => [c.normalizedName, c]));
     this.fuzzyMatcher = new FuzzySearch(Array.from(this.cities.keys()));
-    
+
     console.log(`Loaded ${this.cities.size} cities into memory`);
   }
 
   validateCity(cityName: string): ValidationResult {
     const normalized = this.normalizeInput(cityName);
-    
+
     // Primary: Ultra-fast in-memory lookup (< 1ms)
     const exact = this.cities.get(normalized);
     if (exact) {
-      return { 
-        isValid: true, 
+      return {
+        isValid: true,
         city: exact,
-        source: 'memory',
-        confidence: 1.0 
+        source: "memory",
+        confidence: 1.0,
       };
     }
-    
+
     // Secondary: Fuzzy matching for typos (< 5ms)
-    const suggestions = this.fuzzyMatcher.search(normalized, { 
-      maxDistance: 2, 
-      limit: 3 
+    const suggestions = this.fuzzyMatcher.search(normalized, {
+      maxDistance: 2,
+      limit: 3,
     });
-    
+
     if (suggestions.length > 0) {
       return {
         isValid: false,
-        suggestions: suggestions.map(s => this.cities.get(s)?.displayName),
-        source: 'memory_fuzzy',
-        confidence: 0.8
+        suggestions: suggestions.map((s) => this.cities.get(s)?.displayName),
+        source: "memory_fuzzy",
+        confidence: 0.8,
       };
     }
-    
+
     // Tertiary: API fallback for unknown cities (rare case)
     return this.fallbackToAPI(cityName);
   }
@@ -226,6 +242,7 @@ class CityDatabase {
 ```
 
 #### Key Benefits
+
 - **Sub-millisecond performance** for 99.9% of validations
 - **Zero external dependencies** during gameplay
 - **Superior fuzzy matching** and typo correction
@@ -234,7 +251,7 @@ class CityDatabase {
 
 ### Recommended Data Sources
 
-1. **Primary Source - GeoNames**: 
+1. **Primary Source - GeoNames**:
    - **API**: http://www.geonames.org/export/web-services.html
    - **Coverage**: Global database with 25+ million place names
    - **Features**: Free tier available, comprehensive data
@@ -257,23 +274,24 @@ class CityDatabase {
    - **Usage**: Offline fallback or cache seeding
 
 ### Validation Strategy
+
 ```typescript
 interface ValidationService {
   // Primary validation (in-memory)
   validateCity(cityName: string, gameCode?: string): ValidationResult;
-  
+
   // Duplicate checking
   checkDuplicate(cityName: string, gameCode: string): boolean;
-  
+
   // Utility methods
   normalizeInput(input: string): string;
   extractNextLetter(cityName: string): string;
   getSuggestions(partialName: string): string[];
-  
+
   // Admin methods
   addCustomCity(cityData: Partial<CustomCity>): Promise<void>;
   refreshDatabase(): Promise<void>;
-  
+
   // Fallback for edge cases
   validateCityAPI(cityName: string): Promise<ValidationResult>;
 }
@@ -283,7 +301,7 @@ interface ValidationResult {
   normalizedName: string;
   displayName: string;
   nextStartingLetter: string;
-  source: 'memory' | 'api_fallback';
+  source: "memory" | "api_fallback";
   confidence: number;
   isDuplicate: boolean;
   duplicateMove?: GameMove;
@@ -295,10 +313,10 @@ interface ValidationResult {
 class InMemoryValidator {
   private cityMap: Map<string, CityRecord>;
   private fuzzyMatcher: FuzzySearch;
-  
+
   validate(cityName: string): ValidationResult {
     const normalized = this.normalizeInput(cityName);
-    
+
     // Exact match (< 1ms)
     const exact = this.cityMap.get(normalized);
     if (exact) {
@@ -307,25 +325,27 @@ class InMemoryValidator {
         normalizedName: normalized,
         displayName: exact.displayName,
         nextStartingLetter: this.extractNextLetter(exact.displayName),
-        source: 'memory',
-        confidence: 1.0
+        source: "memory",
+        confidence: 1.0,
       };
     }
-    
+
     // Fuzzy match for typos (< 5ms)
-    const suggestions = this.fuzzyMatcher.search(normalized, { 
-      maxDistance: 2, 
-      limit: 3 
+    const suggestions = this.fuzzyMatcher.search(normalized, {
+      maxDistance: 2,
+      limit: 3,
     });
-    
+
     return {
       isValid: false,
       normalizedName: normalized,
       displayName: cityName,
-      nextStartingLetter: '',
-      source: 'memory',
+      nextStartingLetter: "",
+      source: "memory",
       confidence: 0,
-      suggestions: suggestions.map(s => this.cityMap.get(s)?.displayName).filter(Boolean)
+      suggestions: suggestions
+        .map((s) => this.cityMap.get(s)?.displayName)
+        .filter(Boolean),
     };
   }
 }
@@ -334,6 +354,7 @@ class InMemoryValidator {
 ### Hybrid Implementation Strategy
 
 #### Data Pipeline Architecture
+
 ```typescript
 interface CityRecord {
   normalizedName: string;
@@ -342,7 +363,7 @@ interface CityRecord {
   region?: string;
   population?: number;
   aliases: string[];
-  source: 'geonames' | 'osm' | 'custom' | 'multiple';
+  source: "geonames" | "osm" | "custom" | "multiple";
   confidence: number;
   lastUpdated: Date;
 }
@@ -353,19 +374,19 @@ class CityDatabaseBuilder {
       this.fetchFromGeoNames(),
       this.fetchFromOpenStreetMap(),
       this.loadCustomCities(),
-      this.loadFromBackupSources()
+      this.loadFromBackupSources(),
     ]);
-    
+
     return this.deduplicateAndMerge(sources.flat());
   }
-  
+
   private deduplicateAndMerge(cities: CityRecord[]): CityRecord[] {
     const merged = new Map<string, CityRecord>();
-    
+
     for (const city of cities) {
       const key = city.normalizedName;
       const existing = merged.get(key);
-      
+
       if (!existing) {
         merged.set(key, city);
       } else {
@@ -373,13 +394,14 @@ class CityDatabaseBuilder {
         merged.set(key, this.mergeCityData(existing, city));
       }
     }
-    
+
     return Array.from(merged.values());
   }
 }
 ```
 
 #### Memory Optimization Strategies
+
 - **Estimated Dataset Size**: ~1-2 million cities globally
 - **Memory Usage**: 50-200MB depending on metadata stored
 - **Optimization Techniques**:
@@ -389,12 +411,14 @@ class CityDatabaseBuilder {
   - Lazy load detailed metadata when needed
 
 #### Database Update Strategy
+
 - **Initial Build**: Run comprehensive data pipeline during deployment
 - **Incremental Updates**: Weekly batch updates from external sources
 - **Real-time Additions**: Custom cities added immediately via admin panel
 - **Fallback Mechanism**: If memory lookup fails, fall back to cached API call
 
 ### Custom Cities Management
+
 - **Priority System**: Custom cities override external data sources
 - **Instant Availability**: New approved cities immediately available in memory
 - **Admin Interface**: Real-time addition to in-memory database
@@ -403,6 +427,7 @@ class CityDatabaseBuilder {
 ## API Endpoints
 
 ### REST API
+
 ```
 POST   /api/games              # Create new game
 GET    /api/games/:code        # Get game by code
@@ -422,6 +447,7 @@ GET    /api/cities/search      # Search cities (including custom)
 ```
 
 ### WebSocket Events
+
 ```
 // Client to Server
 - join_game(gameCode, playerInfo)
@@ -441,7 +467,7 @@ GET    /api/cities/search      # Search cities (including custom)
 
 ## Frontend Components Architecture
 
-```
+````
 src/
 ├── components/
 │   ├── GameLobby/
@@ -524,17 +550,19 @@ interface MoveDisplayItem {
     confidence: number;
   };
 }
-```
+````
 
 ### Duplicate City Handling
 
 #### User Interface Flow
+
 1. **Input Validation**: Real-time checking as user types
 2. **Warning Display**: Clear messaging when duplicate detected
 3. **Previous Usage Info**: Show when and by whom the city was previously used
 4. **Suggestion System**: Offer similar city alternatives
 
 #### Error Messages
+
 ```typescript
 interface DuplicateError {
   message: string;
@@ -543,7 +571,8 @@ interface DuplicateError {
   alternatives?: CustomCity[];
 }
 ```
-```
+
+````
 
 ## Testing Strategy
 
@@ -554,7 +583,7 @@ interface DuplicateError {
   - Input validation
   - State management
 
-- **Integration Tests**: 
+- **Integration Tests**:
   - Socket.io connection
   - API integration
   - End-to-end user flows
@@ -596,16 +625,16 @@ on:
 jobs:
   test:
     # Run tests for both frontend and backend
-    
+
   build:
     # Build applications
-    
+
   deploy-staging:
     # Deploy to staging environment
-    
+
   deploy-production:
     # Deploy to production (main branch only)
-```
+````
 
 ### Pipeline Stages
 
@@ -639,18 +668,21 @@ jobs:
 ## Security Considerations
 
 ### Input Validation
+
 - Sanitize all user inputs
 - Validate game codes format
 - Rate limiting on API endpoints
 - XSS prevention
 
 ### Authentication & Authorization
+
 - JWT tokens for session management
 - Socket.io authentication
 - CORS configuration
 - Input sanitization
 
 ### Data Protection
+
 - No personal data collection
 - Temporary game data (auto-cleanup)
 - Secure WebSocket connections (WSS)
@@ -658,40 +690,45 @@ jobs:
 ## Performance Considerations
 
 ### In-Memory Database Performance
+
 - **Validation Speed**: < 1ms for exact matches, < 5ms for fuzzy matching
 - **Memory Usage**: ~100-150MB per server instance
 - **Startup Time**: 30-60 seconds for initial database load
 - **Concurrent Access**: Thread-safe read operations, no locking needed
 
 ### Scalability Strategy
+
 - **Horizontal Scaling**: Each server instance loads identical city database
-- **Load Balancing**: Stateless validation allows any server to handle requests  
+- **Load Balancing**: Stateless validation allows any server to handle requests
 - **Database Sync**: Periodic updates ensure all instances have same data
 - **Graceful Updates**: Rolling deployments with zero-downtime database refresh
 
 ### Memory Management & Startup
+
 ```typescript
 // Server initialization sequence
 async function initializeServer() {
-  console.log('🏗️  Initializing Cities Game Server...');
-  
+  console.log("🏗️  Initializing Cities Game Server...");
+
   // Step 1: Load city database into memory
-  console.log('📚 Loading city database...');
+  console.log("📚 Loading city database...");
   const startTime = Date.now();
-  
+
   await cityValidator.initialize();
-  
+
   const loadTime = Date.now() - startTime;
   const memoryUsage = process.memoryUsage();
-  
+
   console.log(`✅ City database loaded in ${loadTime}ms`);
-  console.log(`💾 Memory usage: ${Math.round(memoryUsage.heapUsed / 1024 / 1024)}MB`);
+  console.log(
+    `💾 Memory usage: ${Math.round(memoryUsage.heapUsed / 1024 / 1024)}MB`,
+  );
   console.log(`🌍 Cities available: ${cityValidator.getCityCount()}`);
-  
+
   // Step 2: Initialize other services
   await initializeGameEngine();
   await connectToMongoDB();
-  
+
   // Step 3: Start accepting connections
   server.listen(PORT, () => {
     console.log(`🚀 Server ready on port ${PORT}`);
@@ -700,8 +737,9 @@ async function initializeServer() {
 ```
 
 ### Validation Flow Strategy
+
 1. **Primary (99.9%)**: In-memory exact match validation (< 1ms)
-2. **Secondary**: In-memory fuzzy matching for typos (< 5ms)  
+2. **Secondary**: In-memory fuzzy matching for typos (< 5ms)
 3. **Tertiary**: API fallback for completely unknown cities (< 500ms)
 4. **Admin Override**: Real-time custom city additions
 5. **Cache Layer**: Redis for API fallback results
@@ -709,12 +747,14 @@ async function initializeServer() {
 ## Monitoring & Analytics
 
 ### Application Monitoring
+
 - **Health Checks**: API endpoint monitoring
 - **Performance**: Response time tracking
 - **Error Tracking**: Sentry integration
 - **Uptime**: Status page monitoring
 
 ### Game Analytics
+
 - Game completion rates
 - Average game duration
 - Popular city names
@@ -725,19 +765,20 @@ async function initializeServer() {
 ### ETL Process for City Database
 
 #### Build Pipeline Architecture
+
 ```typescript
 interface DataPipeline {
   // Extract from multiple sources
   extractGeoNamesData(): Promise<RawCityData[]>;
-  extractOpenStreetMapData(): Promise<RawCityData[]>;  
+  extractOpenStreetMapData(): Promise<RawCityData[]>;
   extractCustomCities(): Promise<CustomCity[]>;
   extractBackupSources(): Promise<RawCityData[]>;
-  
+
   // Transform and normalize
   transformAndNormalize(rawData: RawCityData[]): CityRecord[];
   deduplicateByName(cities: CityRecord[]): CityRecord[];
   enrichWithMetadata(cities: CityRecord[]): CityRecord[];
-  
+
   // Load into formats
   generateInMemoryDatabase(): Map<string, CityRecord>;
   generateFuzzySearchIndex(): FuzzySearchIndex;
@@ -746,6 +787,7 @@ interface DataPipeline {
 ```
 
 #### Automated Build Process
+
 ```bash
 # Daily automated pipeline (GitHub Actions)
 npm run build:city-database
@@ -762,6 +804,7 @@ npm run build:city-database
 ```
 
 #### Data Sources Integration
+
 ```typescript
 class GeoNamesExtractor {
   async extract(): Promise<RawCityData[]> {
@@ -789,20 +832,23 @@ class CustomCitiesExtractor {
 ```
 
 #### Quality Assurance
+
 - **Deduplication Logic**: Fuzzy matching to merge similar entries
 - **Data Validation**: Ensure all cities have valid names and countries
-- **Coverage Analysis**: Report gaps in geographic coverage  
+- **Coverage Analysis**: Report gaps in geographic coverage
 - **Performance Testing**: Validate memory usage and lookup speed
 - **Smoke Tests**: Verify common cities are findable
 
 ## Deployment Strategy
 
 ### Environments
+
 1. **Development**: Local development with hot reload
 2. **Staging**: Feature testing and integration testing
 3. **Production**: Live application with monitoring
 
 ### Database Migration
+
 - MongoDB migration scripts
 - Seed data for testing
 - Custom cities collection setup
@@ -814,6 +860,7 @@ class CustomCitiesExtractor {
 ### Database Collections
 
 #### Cities Collection
+
 ```typescript
 // MongoDB collection: custom_cities
 interface CustomCityDocument {
@@ -831,7 +878,7 @@ interface CustomCityDocument {
   addedBy: ObjectId; // reference to admin user
   isApproved: boolean; // indexed
   rejectionReason?: string;
-  source: 'manual' | 'import' | 'user_suggestion';
+  source: "manual" | "import" | "user_suggestion";
   metadata: {
     createdAt: Date;
     updatedAt: Date;
@@ -842,12 +889,13 @@ interface CustomCityDocument {
 ```
 
 #### Admin Users Collection
+
 ```typescript
 interface AdminUser {
   _id: ObjectId;
   username: string;
   email: string;
-  role: 'super_admin' | 'moderator';
+  role: "super_admin" | "moderator";
   permissions: {
     canAddCities: boolean;
     canApproveCities: boolean;
@@ -861,6 +909,7 @@ interface AdminUser {
 ### API Implementation Details
 
 #### Custom Cities Service
+
 ```typescript
 class CustomCitiesService {
   async addCustomCity(cityData: CreateCustomCityDto): Promise<CustomCity> {
@@ -877,8 +926,8 @@ class CustomCitiesService {
   }
 
   async validateCityExists(
-    cityName: string, 
-    gameHistory: string[]
+    cityName: string,
+    gameHistory: string[],
   ): Promise<ValidationResult> {
     // Check custom cities first (higher priority)
     // Fall back to external APIs
@@ -889,22 +938,23 @@ class CustomCitiesService {
 ```
 
 #### Duplicate Detection Logic
+
 ```typescript
 class DuplicateChecker {
   static checkDuplicate(
-    cityName: string, 
-    gameHistory: GameMove[]
+    cityName: string,
+    gameHistory: GameMove[],
   ): DuplicateCheckResult {
     const normalized = this.normalizeCityName(cityName);
-    
-    const existingMove = gameHistory.find(move => 
-      move.normalizedCityName === normalized
+
+    const existingMove = gameHistory.find(
+      (move) => move.normalizedCityName === normalized,
     );
-    
+
     return {
       isDuplicate: !!existingMove,
       previousMove: existingMove,
-      normalizedName: normalized
+      normalizedName: normalized,
     };
   }
 
@@ -912,9 +962,9 @@ class DuplicateChecker {
     return name
       .toLowerCase()
       .trim()
-      .replace(/\s+/g, ' ')
-      .replace(/[.,;!?]$/g, '') // remove trailing punctuation
-      .replace(/\bcity\b$/i, '') // remove trailing "city"
+      .replace(/\s+/g, " ")
+      .replace(/[.,;!?]$/g, "") // remove trailing punctuation
+      .replace(/\bcity\b$/i, "") // remove trailing "city"
       .trim();
   }
 }
@@ -923,6 +973,7 @@ class DuplicateChecker {
 ### Admin Panel Features
 
 #### City Management Interface
+
 - **Bulk Import**: CSV/JSON upload for large city lists
 - **Approval Queue**: Pending cities requiring review
 - **Search & Filter**: Find cities by various criteria
@@ -930,12 +981,14 @@ class DuplicateChecker {
 - **Audit Trail**: Track who added/approved/modified each city
 
 #### Analytics & Reporting
+
 - **Usage Statistics**: Most popular cities in games
 - **Coverage Analysis**: Geographic distribution of available cities
 - **Validation Metrics**: Success rates of different data sources
 - **Performance Monitoring**: API response times and cache hit rates
 
 ### Feature Flags
+
 - Gradual feature rollout
 - A/B testing capabilities
 - Quick feature disable in emergencies
@@ -943,6 +996,7 @@ class DuplicateChecker {
 ## Future Enhancements
 
 ### Phase 1 (MVP)
+
 - Basic multiplayer gameplay
 - City validation with duplicate prevention
 - Real-time updates
@@ -950,13 +1004,15 @@ class DuplicateChecker {
 - Custom cities database with admin management
 
 ### Phase 2 (Enhanced Features)
+
 - Player statistics and achievements
-- Advanced game history analytics  
+- Advanced game history analytics
 - Spectator mode
 - Custom game rules (time limits, themes)
 - Improved search and city suggestions
 
 ### Phase 3 (Advanced Features)
+
 - Tournament mode with brackets
 - Global leaderboards
 - Social features (friend lists, private rooms)
@@ -966,30 +1022,35 @@ class DuplicateChecker {
 ## Development Timeline
 
 ### Week 1-2: Setup & Infrastructure
+
 - Project setup and technology stack
 - Database design (MongoDB + in-memory)
 - CI/CD pipeline with GitHub Actions
 - Data pipeline architecture design
 
 ### Week 3-4: Data Pipeline & Core Backend
+
 - Build ETL pipeline for city database
 - Implement in-memory validation service
 - Game logic implementation
 - WebSocket integration and testing
 
 ### Week 5-6: Frontend Development
+
 - React components
 - Game UI/UX
 - Socket.io integration
 - Frontend tests
 
 ### Week 7-8: Integration & Testing
+
 - End-to-end testing
 - Performance optimization
 - Security audit
 - Deployment preparation
 
 ### Week 9: Deployment & Monitoring
+
 - Production deployment
 - Monitoring setup
 - Documentation

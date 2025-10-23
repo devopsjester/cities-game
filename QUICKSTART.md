@@ -3,12 +3,14 @@
 ## Local Development
 
 ### Prerequisites
+
 - Node.js 18+ and npm
 - MongoDB (running locally or via Docker)
 
 ### Setup
 
 1. **Install dependencies:**
+
    ```bash
    npm install
    ```
@@ -16,6 +18,7 @@
 2. **Set up environment variables:**
 
    Backend (`backend/.env`):
+
    ```
    NODE_ENV=development
    PORT=3001
@@ -24,19 +27,23 @@
    ```
 
    Frontend (`frontend/.env`):
+
    ```
    VITE_API_URL=http://localhost:3001
    ```
 
 3. **Start MongoDB** (if not already running):
+
    ```bash
    docker run -d -p 27017:27017 --name mongodb mongo:6.0
    ```
 
 4. **Start the development servers:**
+
    ```bash
    npm run dev
    ```
+
    This will start both backend (port 3001) and frontend (port 5173).
 
 5. **Access the application:**
@@ -63,16 +70,19 @@ Access the application at http://localhost:3000
 ## Building
 
 ### Build both frontend and backend
+
 ```bash
 npm run build
 ```
 
 ### Build backend only
+
 ```bash
 npm run build:backend
 ```
 
 ### Build frontend only
+
 ```bash
 npm run build:frontend
 ```
@@ -80,11 +90,13 @@ npm run build:frontend
 ## Testing
 
 ### Run all tests
+
 ```bash
 npm test
 ```
 
 ### Run backend tests with coverage
+
 ```bash
 npm run test:backend
 ```
@@ -122,16 +134,21 @@ cities-game/
 ## Troubleshooting
 
 ### MongoDB Connection Issues
+
 If you get connection errors, ensure MongoDB is running:
+
 ```bash
 docker ps | grep mongo
 ```
 
 ### Port Already in Use
+
 If ports 3001 or 5173 are in use, you can change them in the `.env` files.
 
 ### Build Errors
+
 Clear node_modules and reinstall:
+
 ```bash
 npm run clean
 npm install
